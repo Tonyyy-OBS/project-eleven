@@ -1,5 +1,4 @@
-import { create } from 'zustand';
-import { xpFor, MISSIONS, ACHIEVEMENTS } from './gameData';
+import { xpFor } from './gameData';
 
 // We'll use a simple store approach instead of zustand for now
 // Using React context + localStorage
