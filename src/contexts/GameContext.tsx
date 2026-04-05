@@ -1,14 +1,14 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
-import { DB, UserData, createUser, today, shuf, Mission } from '@/lib/gameStore';
-import { xpFor, MISSIONS, ACHIEVEMENTS } from '@/lib/gameData';
+import { DB, UserData, createUser, today, shuf, Mission, AvatarConfig } from '@/lib/gameStore';
+import { xpFor, MISSIONS } from '@/lib/gameData';
 import { SFX } from '@/lib/sounds';
 import { toast } from 'sonner';
 
 interface GameContextType {
   user: UserData | null;
   setUser: (u: UserData | null) => void;
-  login: (email: string, pwd: string) => void;
-  register: (name: string, email: string, pwd: string) => void;
+  login: (name: string, pwd: string) => void;
+  register: (name: string, pwd: string) => void;
   logout: () => void;
   saveUser: (u: UserData) => void;
   addXpCoins: (xp: number, coins: number) => void;
@@ -41,19 +41,18 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     setUser({ ...u });
   }, []);
 
-  const login = useCallback((email: string, pwd: string) => {
-    const u = DB.all().find(x => x.email === email.toLowerCase().trim());
-    if (!u) throw new Error('Email não encontrado. Crie uma conta!');
+  const login = useCallback((name: string, pwd: string) => {
+    const u = DB.all().find(x => x.name.toLowerCase() === name.toLowerCase().trim());
+    if (!u) throw new Error('Jogador não encontrado. Crie uma conta!');
     if (u.pwd !== pwd) throw new Error('Senha incorreta. Tente novamente.');
     DB.setCur(u.id);
     setUser(u);
   }, []);
 
-  const register = useCallback((name: string, email: string, pwd: string) => {
+  const register = useCallback((name: string, pwd: string) => {
     const all = DB.all();
-    if (all.find(x => x.email === email.toLowerCase().trim())) throw new Error('Este email já está cadastrado.');
-    if (all.find(x => x.name.toLowerCase() === name.toLowerCase())) throw new Error('Este nome já está em uso.');
-    const u = createUser(name, email, pwd);
+    if (all.find(x => x.name.toLowerCase() === name.toLowerCase().trim())) throw new Error('Este nome já está em uso.');
+    const u = createUser(name, pwd);
     DB.save(u);
     DB.setCur(u.id);
     setUser(u);
@@ -84,8 +83,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
 
   const checkAchInternal = (u: UserData, k: string) => {
     if (u.ach?.includes(k)) return;
-    const na = [...(u.ach || []), k];
-    const updated = { ...u, ach: na };
+    const updated = { ...u, ach: [...(u.ach || []), k] };
     DB.save(updated);
     setUser(updated);
     setTimeout(() => setShowAchievement(k), 800);
@@ -94,8 +92,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
   const checkAch = useCallback((k: string, cond = true) => {
     setUser(prev => {
       if (!prev || !cond || prev.ach?.includes(k)) return prev;
-      const na = [...(prev.ach || []), k];
-      const updated = { ...prev, ach: na };
+      const updated = { ...prev, ach: [...(prev.ach || []), k] };
       DB.save(updated);
       setTimeout(() => setShowAchievement(k), 800);
       return updated;
@@ -106,19 +103,18 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     setUser(prev => {
       if (!prev) return prev;
       const ms = [...(prev.dailyMs || [])];
-      let changed = false;
+      let coinsEarned = 0;
       ms.forEach(m => {
         if (!m.done && m.k === k) {
           m.prog = Math.min(m.t, m.prog + amt);
           if (m.prog >= m.t) {
-            m.done = true; changed = true;
-            toast(`🎯 Missão: ${m.l}! +${m.c}💰`);
+            m.done = true;
+            coinsEarned += m.c;
+            toast(`🎯 Missão completa: ${m.l}! +${m.c}💰`);
           }
         }
       });
-      const updated = changed
-        ? { ...prev, coins: prev.coins + ms.filter(m => m.done).reduce((s, m) => s, 0), dailyMs: ms }
-        : { ...prev, dailyMs: ms };
+      const updated = { ...prev, coins: prev.coins + coinsEarned, dailyMs: ms };
       DB.save(updated);
       return updated;
     });
