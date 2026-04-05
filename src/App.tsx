@@ -1,27 +1,59 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { Toaster } from "@/components/ui/toaster";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import Index from "./pages/Index.tsx";
-import NotFound from "./pages/NotFound.tsx";
+import { useState, useCallback } from 'react';
+import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Toaster } from '@/components/ui/sonner';
+import { GameProvider, useGame } from '@/contexts/GameContext';
+import ParticleCanvas from '@/components/ParticleCanvas';
+import GameModals from '@/components/GameModals';
+import LoadingScreen from '@/pages/LoadingScreen';
+import AuthScreen from '@/pages/AuthScreen';
+import CharacterScreen from '@/pages/CharacterScreen';
+import HubScreen from '@/pages/HubScreen';
+import GameScreen from '@/pages/GameScreen';
+import QuizScreen from '@/pages/QuizScreen';
+import RankingScreen from '@/pages/RankingScreen';
+import ShopScreen from '@/pages/ShopScreen';
+import ProfileScreen from '@/pages/ProfileScreen';
+import NotFound from '@/pages/NotFound';
+import { AnimatePresence } from 'framer-motion';
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+function AppRoutes() {
+  const { user } = useGame();
+  const [loading, setLoading] = useState(true);
 
-export default App;
+  const onLoadComplete = useCallback(() => setLoading(false), []);
+
+  if (loading) return <LoadingScreen onComplete={onLoadComplete} />;
+  if (!user) return <AuthScreen />;
+  if (!user.charCreated) return <CharacterScreen />;
+
+  return (
+    <Routes>
+      <Route path="/" element={<Navigate to="/hub" replace />} />
+      <Route path="/hub" element={<HubScreen />} />
+      <Route path="/game" element={<GameScreen />} />
+      <Route path="/quiz" element={<QuizScreen />} />
+      <Route path="/ranking" element={<RankingScreen />} />
+      <Route path="/shop" element={<ShopScreen />} />
+      <Route path="/profile" element={<ProfileScreen />} />
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  );
+}
+
+export default function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <GameProvider>
+        <ParticleCanvas />
+        <Toaster position="top-right" />
+        <GameModals />
+        <BrowserRouter>
+          <AppRoutes />
+        </BrowserRouter>
+      </GameProvider>
+    </QueryClientProvider>
+  );
+}
