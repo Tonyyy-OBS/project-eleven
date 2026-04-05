@@ -13,6 +13,7 @@ import QuizScreen from '@/pages/QuizScreen';
 import RankingScreen from '@/pages/RankingScreen';
 import ShopScreen from '@/pages/ShopScreen';
 import ProfileScreen from '@/pages/ProfileScreen';
+import CreditsScreen from '@/pages/CreditsScreen';
 import NotFound from '@/pages/NotFound';
 
 const queryClient = new QueryClient();
@@ -36,6 +37,7 @@ function AppRoutes() {
       <Route path="/shop" element={<ShopScreen />} />
       <Route path="/profile" element={<ProfileScreen />} />
       <Route path="/avatar" element={<CharacterScreen />} />
+      <Route path="/credits" element={<CreditsScreen />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
@@ -45,7 +47,7 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <GameProvider>
-        <Toaster position="top-right" />
+        <Toaster position="top-right" richColors />
         <GameModals />
         <BrowserRouter>
           <AppRoutes />
