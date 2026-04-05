@@ -8,7 +8,7 @@ import { SFX } from '@/lib/sounds';
 import Avatar from '@/components/Avatar';
 import { defaultAvatar } from '@/lib/gameStore';
 import { toast } from 'sonner';
-import { LogOut, Gamepad2, Brain, Trophy, ShoppingBag, User, Star, Coins } from 'lucide-react';
+import { LogOut, Gamepad2, Brain, Trophy, ShoppingBag, User, Star, Coins, Info } from 'lucide-react';
 
 export default function HubScreen() {
   const { user, saveUser, logout } = useGame();
@@ -35,6 +35,7 @@ export default function HubScreen() {
     { key: 'shop', icon: ShoppingBag, title: 'LOJA', sub: 'Itens & Costumes', path: '/shop', color: 'from-emerald-400 to-emerald-600' },
     { key: 'profile', icon: User, title: 'PERFIL', sub: 'Stats & Conquistas', path: '/profile', color: 'from-pink-400 to-pink-600' },
     { key: 'avatar', icon: Star, title: 'AVATAR', sub: 'Personalizar', path: '/avatar', color: 'from-cyan-400 to-cyan-600' },
+    { key: 'credits', icon: Info, title: 'CRÉDITOS', sub: 'Equipe do projeto', path: '/credits', color: 'from-slate-400 to-slate-600' },
   ];
 
   return (
@@ -43,12 +44,16 @@ export default function HubScreen() {
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
     >
       {/* Header */}
-      <div className="glass-card mx-3 mt-3 mb-2 px-4 py-3 flex items-center justify-between rounded-2xl">
+      <div className="glass-card mx-3 mt-3 mb-2 px-4 py-3 flex items-center justify-between rounded-2xl flex-shrink-0">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-full border-2 border-primary overflow-hidden flex items-center justify-center bg-secondary/50 cursor-pointer hover:scale-105 transition-transform"
-            onClick={() => navigate('/profile')}>
+          <motion.div
+            className="w-12 h-12 rounded-full border-2 border-primary overflow-hidden flex items-center justify-center bg-secondary/50 cursor-pointer"
+            onClick={() => navigate('/profile')}
+            whileHover={{ scale: 1.08 }}
+            whileTap={{ scale: 0.95 }}
+          >
             <Avatar config={user.avatar || defaultAvatar()} size={40} />
-          </div>
+          </motion.div>
           <div className="flex flex-col gap-1">
             <span className="font-display text-sm text-primary">{user.name}</span>
             <div className="flex items-center gap-2">
@@ -80,13 +85,19 @@ export default function HubScreen() {
             <p className="font-display text-xs text-muted-foreground mb-3 tracking-wider">📅 MISSÕES DIÁRIAS</p>
             <div className="flex gap-2.5 overflow-x-auto pb-1 scrollbar-hide">
               {missions.map((m, i) => (
-                <div key={i} className={`bg-secondary/40 border rounded-xl p-3 min-w-[180px] flex-shrink-0 flex flex-col gap-1.5 transition-colors ${m.done ? 'border-emerald-400' : 'border-border/50'}`}>
+                <motion.div
+                  key={i}
+                  className={`bg-secondary/40 border rounded-xl p-3 min-w-[180px] flex-shrink-0 flex flex-col gap-1.5 transition-colors ${m.done ? 'border-emerald-400 bg-emerald-50/30' : 'border-border/50'}`}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.08 }}
+                >
                   <span className="text-xs font-bold">{m.done ? '✅ ' : ''}{m.l}</span>
                   <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
                     <div className="h-full rounded-full bg-primary transition-all duration-500" style={{ width: `${Math.min(100, (m.prog / m.t) * 100)}%` }} />
                   </div>
                   <span className="text-[0.68rem] text-accent font-semibold">🪙 {m.c} · ⚡ {m.x} XP · {m.prog}/{m.t}</span>
-                </div>
+                </motion.div>
               ))}
             </div>
           </div>
@@ -101,7 +112,6 @@ export default function HubScreen() {
                   onClick={() => {
                     SFX.click();
                     if (card.locked) { toast(`🔒 Quiz disponível no Nível ${QUIZ_UNLOCK}!`); return; }
-                    if (card.key === 'avatar') { navigate('/avatar'); return; }
                     navigate(card.path);
                   }}
                   className={`glass-card p-4 flex flex-col items-center gap-2 text-center transition-all relative overflow-hidden ${card.locked ? 'opacity-50' : 'hover:shadow-lg hover:-translate-y-1'}`}
