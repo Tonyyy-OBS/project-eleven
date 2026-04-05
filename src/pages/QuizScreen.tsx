@@ -1,10 +1,11 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '@/contexts/GameContext';
 import { QUESTIONS } from '@/lib/gameData';
-import { shuf, DB } from '@/lib/gameStore';
+import { shuf } from '@/lib/gameStore';
 import { SFX } from '@/lib/sounds';
+import { ArrowLeft, Trophy } from 'lucide-react';
 
 type Phase = 'intro' | 'play' | 'result';
 interface QState {
@@ -27,7 +28,7 @@ export default function QuizScreen() {
   const startQuiz = () => {
     SFX.click();
     const state: QState = {
-      qs: shuf([...QUESTIONS]),
+      qs: shuf([...QUESTIONS]).slice(0, 10),
       cur: 0, score: 0, ok: 0,
       combo: 0, maxCombo: 0,
       timeLeft: 15, answered: false,
@@ -73,23 +74,19 @@ export default function QuizScreen() {
     const pts = correct ? 100 + tBonus + qs.combo * 18 : 0;
 
     const updated: QState = {
-      ...qs,
-      answered: true,
-      score: qs.score + pts,
+      ...qs, answered: true, score: qs.score + pts,
       ok: correct ? qs.ok + 1 : qs.ok,
       combo: correct ? qs.combo + 1 : 0,
       maxCombo: correct ? Math.max(qs.combo + 1, qs.maxCombo) : qs.maxCombo,
     };
 
     if (correct) SFX.correct(); else SFX.wrong();
-
     setFeedback({
       correct,
       text: correct
         ? `✅ Correto! +${pts} pts${updated.combo > 1 ? ` 🔥 Combo x${updated.combo}` : ''}`
         : `❌ ${q.f}`,
     });
-
     setQs(updated);
     await new Promise(r => setTimeout(r, 1900));
     nextQuestion(updated);
@@ -108,18 +105,14 @@ export default function QuizScreen() {
   };
 
   const endQuiz = (state: QState) => {
-    SFX.quizEnd();
+    SFX.phase();
     const wrong = state.qs.length - state.ok;
-    const pct = Math.round((state.ok / state.qs.length) * 100);
     const coins = Math.floor(state.score / 10) + state.ok * 5;
-
     setResult({ score: state.score, ok: state.ok, bad: wrong, maxCombo: state.maxCombo, coins });
     setPhase('result');
-
     if (user) {
-      const nqs = Math.max(user.quizScore || 0, state.score);
       saveUser({
-        ...user, quizScore: nqs,
+        ...user, quizScore: Math.max(user.quizScore || 0, state.score),
         history: [{ type: '🧪 Quiz', score: state.score, date: new Date().toLocaleDateString('pt-BR'), detail: `${state.ok}/${state.qs.length} certas` }, ...(user.history || []).slice(0, 14)]
       });
       addXpCoins(state.ok * 8, coins);
@@ -128,34 +121,30 @@ export default function QuizScreen() {
     trackMission('quiz', 1);
   };
 
-  const colors = ['#ef4444', '#3b82f6', '#f59e0b', '#10b981'];
-  const letters = ['A', 'B', 'C', 'D'];
+  const optColors = ['#EF4444', '#3B82F6', '#F59E0B', '#22C55E'];
+  const optLetters = ['A', 'B', 'C', 'D'];
 
   return (
-    <motion.div className="fixed inset-0 z-10 flex flex-col overflow-hidden"
-      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-
+    <motion.div className="fixed inset-0 z-10 flex flex-col overflow-hidden" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
       {phase === 'intro' && (
         <div className="flex-1 flex items-center justify-center p-4">
-          <motion.div className="surface-1 border-2 border-secondary rounded-lg p-8 max-w-md text-center flex flex-col gap-4 glow-purple"
-            initial={{ scale: 0.8 }} animate={{ scale: 1 }}>
+          <motion.div className="glass-card p-8 max-w-md text-center flex flex-col gap-4" initial={{ scale: 0.85 }} animate={{ scale: 1 }}>
             <div className="text-6xl animate-float">🧪</div>
-            <h1 className="font-display text-2xl text-secondary text-glow-purple">QUIZ ATÔMICO</h1>
+            <h1 className="font-display text-2xl text-primary">QUIZ ATÔMICO</h1>
             <p className="text-muted-foreground text-sm leading-relaxed">
-              Teste seus conhecimentos sobre modelos atômicos!<br />10 perguntas · 15 segundos cada · Bônus de velocidade
+              Teste seus conhecimentos sobre modelos atômicos!<br />10 perguntas · 15 segundos cada
             </p>
             <div className="flex flex-col gap-2">
               {['⚡ Resposta rápida = mais pontos', '🔥 Acertos seguidos = combo!', '🏆 Seu score vai pro ranking'].map(r => (
-                <div key={r} className="surface-2 rounded-md px-3.5 py-2 text-sm font-semibold">{r}</div>
+                <div key={r} className="bg-secondary/40 rounded-lg px-3.5 py-2 text-sm font-semibold">{r}</div>
               ))}
             </div>
             <div className="flex gap-2.5 justify-center mt-2">
               <button onClick={() => navigate('/hub')}
-                className="surface-1 border border-border text-muted-foreground px-5 py-2.5 rounded-md text-sm font-bold hover:border-primary hover:text-foreground transition-all">
-                ‹ VOLTAR
+                className="bg-secondary text-foreground px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-1.5">
+                <ArrowLeft size={14} /> VOLTAR
               </button>
-              <button onClick={startQuiz}
-                className="gradient-primary text-primary-foreground px-5 py-2.5 rounded-md text-sm font-extrabold glow-cyan hover:-translate-y-0.5 transition-all">
+              <button onClick={startQuiz} className="btn-primary text-sm">
                 COMEÇAR ⚛️
               </button>
             </div>
@@ -165,37 +154,26 @@ export default function QuizScreen() {
 
       {phase === 'play' && qs && (
         <div className="flex-1 flex flex-col">
-          {/* Header */}
-          <div className="w-full border-b border-border px-4 py-3 flex flex-col gap-2 sticky top-0 backdrop-blur-lg flex-shrink-0"
-            style={{ background: 'rgba(3,3,17,0.92)' }}>
-            <div className="h-1 surface-2 rounded-full overflow-hidden">
-              <div className="h-full gradient-primary rounded-full transition-all duration-500"
-                style={{ width: `${(qs.cur / qs.qs.length) * 100}%` }} />
+          <div className="glass-card mx-3 mt-3 px-4 py-3 flex flex-col gap-2 rounded-2xl flex-shrink-0">
+            <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
+              <div className="h-full bg-primary rounded-full transition-all duration-500" style={{ width: `${(qs.cur / qs.qs.length) * 100}%` }} />
             </div>
             <div className="flex justify-between text-xs font-bold text-muted-foreground">
               <span>{qs.cur + 1}/{qs.qs.length}</span>
               <span>{qs.score} pts</span>
             </div>
-            <div className="h-1.5 surface-2 rounded-full overflow-hidden">
+            <div className="h-2 bg-secondary rounded-full overflow-hidden">
               <div className="h-full rounded-full transition-transform duration-100 origin-left"
-                style={{
-                  background: 'linear-gradient(90deg, hsl(var(--success)), hsl(var(--accent)), hsl(var(--destructive)))',
-                  transform: `scaleX(${qs.timeLeft / 15})`
-                }} />
+                style={{ background: `linear-gradient(90deg, #22C55E, #F59E0B, #EF4444)`, transform: `scaleX(${qs.timeLeft / 15})` }} />
             </div>
-            <div className={`font-display text-xl text-center transition-colors ${qs.timeLeft <= 5 ? 'text-destructive' : 'text-success'}`}>
+            <div className={`font-display text-xl text-center ${qs.timeLeft <= 5 ? 'text-destructive' : 'text-emerald-600'}`}>
               {qs.timeLeft}
             </div>
           </div>
 
-          {/* Question */}
           <div className="flex-1 flex flex-col items-center justify-center gap-3 p-4 overflow-y-auto">
-            <motion.div
-              key={qs.cur}
-              className="surface-1 border-2 border-secondary rounded-lg p-5 max-w-lg w-full text-center glow-purple"
-              initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-            >
-              <div className="text-4xl mb-2">{qs.qs[qs.cur].img}</div>
+            <motion.div key={qs.cur} className="glass-card p-5 max-w-lg w-full text-center"
+              initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
               <h2 className="text-base font-bold leading-relaxed">{qs.qs[qs.cur].t}</h2>
             </motion.div>
 
@@ -203,18 +181,16 @@ export default function QuizScreen() {
               {qs.qs[qs.cur].opts.map((opt, j) => {
                 const isCorrect = j === qs.qs[qs.cur].ans;
                 const isSelected = selected === j;
-                let cls = 'surface-1 border-2 border-border';
+                let cls = 'glass-card border-2 border-transparent';
                 if (selected !== null) {
-                  if (isCorrect) cls = 'bg-success/10 border-2 border-success text-success';
-                  else if (isSelected) cls = 'bg-destructive/10 border-2 border-destructive text-destructive';
+                  if (isCorrect) cls = 'bg-emerald-50 border-2 border-emerald-400 text-emerald-700';
+                  else if (isSelected) cls = 'bg-red-50 border-2 border-destructive text-destructive';
                 }
                 return (
-                  <motion.button key={j} onClick={() => answer(j)}
-                    disabled={qs.answered}
-                    className={`${cls} rounded-md px-3.5 py-3 text-sm font-bold text-left transition-all cursor-pointer hover:-translate-y-0.5 hover:border-secondary disabled:cursor-not-allowed`}
-                    initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: j * 0.05 }}
-                  >
-                    <span className="font-black mr-1.5" style={{ color: colors[j] }}>{letters[j]}</span>
+                  <motion.button key={j} onClick={() => answer(j)} disabled={qs.answered}
+                    className={`${cls} rounded-xl px-4 py-3 text-sm font-bold text-left transition-all hover:shadow-md disabled:cursor-not-allowed`}
+                    initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: j * 0.05 }}>
+                    <span className="font-black mr-2" style={{ color: optColors[j] }}>{optLetters[j]}</span>
                     {opt}
                   </motion.button>
                 );
@@ -225,7 +201,7 @@ export default function QuizScreen() {
               {feedback && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
-                  className={`max-w-lg w-full px-4 py-3 rounded-md text-sm font-bold text-center ${feedback.correct ? 'bg-success/10 border border-success text-success' : 'bg-destructive/10 border border-destructive text-destructive'}`}
+                  className={`max-w-lg w-full px-4 py-3 rounded-xl text-sm font-bold text-center ${feedback.correct ? 'bg-emerald-50 border border-emerald-400 text-emerald-700' : 'bg-red-50 border border-destructive text-destructive'}`}
                 >{feedback.text}</motion.div>
               )}
             </AnimatePresence>
@@ -235,29 +211,28 @@ export default function QuizScreen() {
 
       {phase === 'result' && result && (
         <div className="flex-1 flex items-center justify-center p-4">
-          <motion.div className="surface-1 border-2 border-accent rounded-lg p-8 max-w-sm text-center flex flex-col items-center gap-3 glow-gold"
+          <motion.div className="glass-card p-8 max-w-sm text-center flex flex-col items-center gap-3 shadow-xl"
             initial={{ scale: 0.6 }} animate={{ scale: 1 }} transition={{ type: 'spring', damping: 15 }}>
             <div className="text-6xl animate-float">
-              {Math.round((result.ok / QUESTIONS.length) * 100) >= 90 ? '🥇' : Math.round((result.ok / QUESTIONS.length) * 100) >= 70 ? '🥈' : '🥉'}
+              {result.ok >= 9 ? '🥇' : result.ok >= 7 ? '🥈' : '🥉'}
             </div>
-            <h2 className="font-display text-xl text-accent">QUIZ CONCLUÍDO!</h2>
-            <div className="font-display text-5xl font-black text-primary text-glow-cyan">{result.score}</div>
-            <div className="text-[0.68rem] text-muted-foreground tracking-widest font-display">PONTOS</div>
-            <div className="surface-1 rounded-md p-3 w-full flex flex-col gap-2">
-              {[['✅ Certas', result.ok], ['❌ Erradas', result.bad], ['🔥 Combo Máx', result.maxCombo], ['💰 Moedas', `+${result.coins}`]].map(([l, v]) => (
+            <h2 className="font-display text-xl text-primary">QUIZ CONCLUÍDO!</h2>
+            <div className="font-display text-5xl text-accent">{result.score}</div>
+            <div className="text-xs text-muted-foreground font-display tracking-wider">PONTOS</div>
+            <div className="bg-secondary/30 rounded-xl p-3 w-full flex flex-col gap-2">
+              {[['✅ Certas', result.ok], ['❌ Erradas', result.bad], ['🔥 Combo Máx', result.maxCombo], ['🪙 Moedas', `+${result.coins}`]].map(([l, v]) => (
                 <div key={l as string} className="flex justify-between text-sm text-muted-foreground">
                   <span>{l}</span><span className="font-bold text-foreground">{v}</span>
                 </div>
               ))}
             </div>
-            <div className="flex gap-2.5 mt-2 flex-wrap justify-center">
+            <div className="flex gap-2.5 mt-2">
               <button onClick={() => { setPhase('intro'); setQs(null); setResult(null); }}
-                className="surface-1 border border-border text-muted-foreground px-4 py-2.5 rounded-md text-sm font-bold hover:border-primary hover:text-foreground transition-all">
-                🔄 Jogar Novamente
+                className="bg-secondary text-foreground px-4 py-2.5 rounded-xl text-sm font-bold">
+                🔄 Novamente
               </button>
-              <button onClick={() => navigate('/ranking')}
-                className="gradient-primary text-primary-foreground px-4 py-2.5 rounded-md text-sm font-extrabold glow-cyan hover:-translate-y-0.5 transition-all">
-                VER RANKING 🏆
+              <button onClick={() => navigate('/ranking')} className="btn-primary text-sm flex items-center gap-1.5">
+                <Trophy size={14} /> RANKING
               </button>
             </div>
           </motion.div>

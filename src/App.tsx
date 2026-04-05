@@ -3,7 +3,6 @@ import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '@/components/ui/sonner';
 import { GameProvider, useGame } from '@/contexts/GameContext';
-import ParticleCanvas from '@/components/ParticleCanvas';
 import GameModals from '@/components/GameModals';
 import LoadingScreen from '@/pages/LoadingScreen';
 import AuthScreen from '@/pages/AuthScreen';
@@ -15,14 +14,12 @@ import RankingScreen from '@/pages/RankingScreen';
 import ShopScreen from '@/pages/ShopScreen';
 import ProfileScreen from '@/pages/ProfileScreen';
 import NotFound from '@/pages/NotFound';
-import { AnimatePresence } from 'framer-motion';
 
 const queryClient = new QueryClient();
 
 function AppRoutes() {
   const { user } = useGame();
   const [loading, setLoading] = useState(true);
-
   const onLoadComplete = useCallback(() => setLoading(false), []);
 
   if (loading) return <LoadingScreen onComplete={onLoadComplete} />;
@@ -38,6 +35,7 @@ function AppRoutes() {
       <Route path="/ranking" element={<RankingScreen />} />
       <Route path="/shop" element={<ShopScreen />} />
       <Route path="/profile" element={<ProfileScreen />} />
+      <Route path="/avatar" element={<CharacterScreen />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
@@ -47,7 +45,6 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <GameProvider>
-        <ParticleCanvas />
         <Toaster position="top-right" />
         <GameModals />
         <BrowserRouter>
