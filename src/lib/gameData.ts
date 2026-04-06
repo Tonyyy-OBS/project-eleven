@@ -1,14 +1,12 @@
-// ==================== AVATAR DATA ====================
-
-export const SKIN_TONES = ['#FDDCB5','#E8B88A','#C4956A','#A67B5B','#8B6142','#6B4226','#3D2415'];
+export const SKIN_TONES = ['#F6D9BE', '#E7BD97', '#CF9D78', '#AF7D5C', '#8D6248', '#694431', '#41261A'];
 
 export const BODY_TYPES = [
-  { id: 0, n: 'Padrão', free: true },
-  { id: 1, n: 'Magro', free: true },
+  { id: 0, n: 'Clássico', free: true },
+  { id: 1, n: 'Atlético', free: true },
   { id: 2, n: 'Robusto', free: true },
-  { id: 3, n: 'Alto', free: true },
-  { id: 4, n: 'Cadeirante', free: true },
-  { id: 5, n: 'Cadeirante 2', free: true },
+  { id: 3, n: 'Elegante', free: true },
+  { id: 4, n: 'Compacto', free: true },
+  { id: 5, n: 'Alto', free: true },
 ];
 
 export interface AvatarItem {
@@ -17,115 +15,114 @@ export interface AvatarItem {
   free: boolean;
   price?: number;
   gems?: number;
-  emoji: string;
+  emoji?: string;
+  gender?: 'male' | 'female' | 'any';
 }
 
 export const HAIR_STYLES: AvatarItem[] = [
-  { id: 0, n: 'Nenhum', free: true, emoji: '🚫' },
-  { id: 1, n: 'Curto', free: false, price: 100, gems: 10, emoji: '💇' },
-  { id: 2, n: 'Liso', free: true, emoji: '💇‍♀️' },
-  { id: 3, n: 'Cacheado', free: false, price: 100, gems: 10, emoji: '🌀' },
-  { id: 4, n: 'Moicano', free: false, price: 100, gems: 10, emoji: '🤘' },
-  { id: 5, n: 'Longo', free: true, emoji: '👩' },
-  { id: 6, n: 'Franja', free: true, emoji: '💁' },
-  { id: 7, n: 'Coque', free: false, price: 100, gems: 10, emoji: '👩‍🦰' },
-  { id: 8, n: 'Rabo de Cavalo', free: false, price: 100, gems: 10, emoji: '🎀' },
-  { id: 9, n: 'Afro', free: false, price: 100, gems: 10, emoji: '🌟' },
-  { id: 10, n: 'Trançado', free: false, price: 100, gems: 10, emoji: '🪢' },
-  { id: 11, n: 'Raspado', free: false, price: 100, gems: 10, emoji: '🪒' },
+  { id: 0, n: 'Raspado', free: true },
+  { id: 1, n: 'Curto', free: true },
+  { id: 2, n: 'Lateral', free: true },
+  { id: 3, n: 'Cacheado', free: false, price: 110 },
+  { id: 4, n: 'Moicano', free: false, price: 120 },
+  { id: 5, n: 'Longo', free: true },
+  { id: 6, n: 'Franja', free: true },
+  { id: 7, n: 'Coque', free: false, price: 130 },
+  { id: 8, n: 'Rabo de Cavalo', free: false, price: 130 },
+  { id: 9, n: 'Afro', free: false, price: 140 },
+  { id: 10, n: 'Tranças', free: false, price: 150 },
+  { id: 11, n: 'Buzz Cut', free: false, price: 100 },
 ];
 
-export const HAIR_COLORS = ['#2D1B0E','#000000','#8B4513','#DAA520','#FF6347','#FF69B4','#800080','#4169E1','#228B22','#C0C0C0'];
+export const HAIR_COLORS = ['#23180E', '#111111', '#6B4428', '#9A5C2F', '#C78C3A', '#C65F52', '#A7485A', '#6B59D3', '#2D7E66', '#C2C6CC'];
 
 export const EYE_TYPES: AvatarItem[] = [
-  { id: 0, n: 'Normal', free: true, emoji: '👀' },
-  { id: 1, n: 'Vermelho', free: false, price: 100, gems: 10, emoji: '🔴' },
-  { id: 2, n: 'Feliz', free: false, price: 100, gems: 10, emoji: '😊' },
-  { id: 3, n: 'Curioso', free: true, emoji: '🤔' },
-  { id: 4, n: 'Azul', free: true, emoji: '🔵' },
-  { id: 5, n: 'Pequeno', free: true, emoji: '👁️' },
-  { id: 6, n: 'Castanho', free: true, emoji: '🟤' },
-  { id: 7, n: 'Verde', free: true, emoji: '🟢' },
-  { id: 8, n: 'Cinza', free: true, emoji: '⚪' },
-  { id: 9, n: 'Âmbar', free: false, price: 100, gems: 10, emoji: '🟡' },
+  { id: 0, n: 'Natural', free: true },
+  { id: 1, n: 'Azul', free: true },
+  { id: 2, n: 'Sorridente', free: true },
+  { id: 3, n: 'Focado', free: false, price: 90 },
+  { id: 4, n: 'Verde', free: true },
+  { id: 5, n: 'Compacto', free: true },
+  { id: 6, n: 'Castanho', free: true },
+  { id: 7, n: 'Cinza', free: false, price: 90 },
+  { id: 8, n: 'Âmbar', free: false, price: 90 },
+  { id: 9, n: 'Determinado', free: false, price: 100 },
 ];
 
 export const NOSE_TYPES: AvatarItem[] = [
-  { id: 0, n: 'Padrão', free: true, emoji: '👃' },
-  { id: 1, n: 'Grande', free: true, emoji: '👃' },
-  { id: 2, n: 'Fino', free: true, emoji: '👃' },
-  { id: 3, n: 'Arrebitado', free: true, emoji: '👃' },
+  { id: 0, n: 'Reta', free: true },
+  { id: 1, n: 'Marcante', free: true },
+  { id: 2, n: 'Fina', free: true },
+  { id: 3, n: 'Leve', free: true },
 ];
 
 export const MOUTH_TYPES: AvatarItem[] = [
-  { id: 0, n: 'Sorriso', free: true, emoji: '😊' },
-  { id: 1, n: 'Bigode', free: false, price: 100, gems: 10, emoji: '🥸' },
-  { id: 2, n: 'Óculos+Bigode', free: false, price: 100, gems: 10, emoji: '🕶️' },
-  { id: 3, n: 'Neutro', free: true, emoji: '😐' },
-  { id: 4, n: 'Aberto', free: true, emoji: '😃' },
-  { id: 5, n: 'Batom Roxo', free: false, price: 100, gems: 10, emoji: '💜' },
-  { id: 6, n: 'Batom Vermelho', free: true, emoji: '💋' },
-  { id: 7, n: 'Batom Rosa', free: true, emoji: '🩷' },
-  { id: 8, n: 'Tímido', free: false, price: 100, gems: 10, emoji: '🫢' },
-  { id: 9, n: 'Sorriso Largo', free: true, emoji: '😁' },
+  { id: 0, n: 'Sorriso', free: true },
+  { id: 1, n: 'Sério', free: true },
+  { id: 2, n: 'Aberto', free: true },
+  { id: 3, n: 'Confiante', free: true },
+  { id: 4, n: 'Sutil', free: true },
+  { id: 5, n: 'Largo', free: false, price: 90 },
+  { id: 6, n: 'Determinado', free: false, price: 100 },
+  { id: 7, n: 'Calmo', free: false, price: 100 },
+  { id: 8, n: 'Bigode', free: false, price: 120 },
+  { id: 9, n: 'Barba curta', free: false, price: 130 },
 ];
 
 export const SHIRT_TYPES: AvatarItem[] = [
-  { id: 0, n: 'Nenhuma', free: true, emoji: '🚫' },
-  { id: 1, n: 'Camiseta Preta', free: false, price: 100, gems: 10, emoji: '🖤' },
-  { id: 2, n: 'Camiseta Colorida', free: true, emoji: '🌈' },
-  { id: 3, n: 'Camiseta Rosa', free: true, emoji: '🩷' },
-  { id: 4, n: 'Camiseta Básica', free: true, emoji: '👕' },
-  { id: 5, n: 'Estrela', free: false, price: 100, gems: 10, emoji: '⭐' },
-  { id: 6, n: 'Camisa Laranja', free: false, price: 100, gems: 10, emoji: '🟠' },
-  { id: 7, n: 'Jaleco', free: false, price: 100, gems: 10, emoji: '🥼' },
+  { id: 0, n: 'Camiseta Grafite', free: true },
+  { id: 1, n: 'Jaqueta Azul', free: true },
+  { id: 2, n: 'Jaleco Atômico', free: false, price: 160 },
+  { id: 3, n: 'Moletom Âmbar', free: false, price: 150 },
+  { id: 4, n: 'Camisa Ciano', free: true },
+  { id: 5, n: 'Blusa Rose', free: true },
+  { id: 6, n: 'Jaqueta Neon', free: false, price: 170 },
+  { id: 7, n: 'Blazer Noite', free: false, price: 180 },
 ];
 
 export const PANTS_TYPES: AvatarItem[] = [
-  { id: 0, n: 'Nenhuma', free: false, price: 100, gems: 10, emoji: '🚫' },
-  { id: 1, n: 'Bermuda Laranja', free: false, price: 100, gems: 10, emoji: '🟠' },
-  { id: 2, n: 'Bermuda Vermelha', free: false, price: 100, gems: 10, emoji: '🔴' },
-  { id: 3, n: 'Bermuda Azul', free: false, price: 100, gems: 10, emoji: '🔵' },
-  { id: 4, n: 'Bermuda Preta', free: true, emoji: '🖤' },
-  { id: 5, n: 'Calça Jeans', free: true, emoji: '👖' },
-  { id: 6, n: 'Calça Preta', free: false, price: 100, gems: 10, emoji: '🖤' },
-  { id: 7, n: 'Calça Azul', free: true, emoji: '💙' },
+  { id: 0, n: 'Calça Slim', free: true },
+  { id: 1, n: 'Jeans Escuro', free: true },
+  { id: 2, n: 'Tática Preta', free: false, price: 130 },
+  { id: 3, n: 'Areia', free: true },
+  { id: 4, n: 'Azul Cobalto', free: true },
+  { id: 5, n: 'Noite', free: false, price: 120 },
+  { id: 6, n: 'Clara', free: false, price: 120 },
+  { id: 7, n: 'Chumbo', free: true },
 ];
 
 export const SHOE_TYPES: AvatarItem[] = [
-  { id: 0, n: 'Nenhum', free: true, emoji: '🚫' },
-  { id: 1, n: 'Tênis Branco', free: false, price: 100, gems: 10, emoji: '👟' },
-  { id: 2, n: 'Bota Marrom', free: false, price: 100, gems: 10, emoji: '🥾' },
-  { id: 3, n: 'Sandália', free: false, price: 100, gems: 10, emoji: '🩴' },
-  { id: 4, n: 'Sapato', free: true, emoji: '👞' },
-  { id: 5, n: 'Tênis Vermelho', free: false, price: 100, gems: 10, emoji: '🔴' },
-  { id: 6, n: 'Sapato Preto', free: true, emoji: '🖤' },
+  { id: 0, n: 'Tênis Branco', free: true },
+  { id: 1, n: 'Tênis Escuro', free: true },
+  { id: 2, n: 'Bota Marrom', free: false, price: 100 },
+  { id: 3, n: 'Runner Ciano', free: false, price: 120 },
+  { id: 4, n: 'Sapato Social', free: true },
+  { id: 5, n: 'Tênis Rubi', free: false, price: 120 },
+  { id: 6, n: 'Bota Tática', free: false, price: 130 },
 ];
 
 export const ACCESSORY_TYPES: AvatarItem[] = [
-  { id: 0, n: 'Nenhum', free: true, emoji: '🚫' },
-  { id: 1, n: 'Cordão Verde', free: true, emoji: '📿' },
-  { id: 2, n: 'Cordão Colorido', free: true, emoji: '🌈' },
-  { id: 3, n: 'Óculos Aviador', free: false, price: 100, gems: 10, emoji: '🕶️' },
-  { id: 4, n: 'Óculos Redondo', free: true, emoji: '🤓' },
-  { id: 5, n: 'Óculos Escuro', free: false, price: 100, gems: 10, emoji: '😎' },
+  { id: 0, n: 'Sem acessório', free: true },
+  { id: 1, n: 'Cordão', free: true },
+  { id: 2, n: 'Crachá', free: true },
+  { id: 3, n: 'Óculos Aviador', free: false, price: 140 },
+  { id: 4, n: 'Óculos Redondo', free: true },
+  { id: 5, n: 'Visor Tech', free: false, price: 150 },
 ];
 
 export type AvatarCategory = 'corpo' | 'cabelo' | 'olhos' | 'nariz' | 'boca' | 'roupa' | 'calca' | 'calcado' | 'acessorios';
 
 export const AVATAR_TABS: { key: AvatarCategory; label: string; emoji: string }[] = [
-  { key: 'corpo', label: 'CORPO', emoji: '🧍' },
-  { key: 'cabelo', label: 'CABELO', emoji: '💇' },
-  { key: 'olhos', label: 'OLHOS', emoji: '👁️' },
-  { key: 'nariz', label: 'NARIZ', emoji: '👃' },
-  { key: 'boca', label: 'BOCA', emoji: '👄' },
-  { key: 'roupa', label: 'ROUPA', emoji: '👕' },
-  { key: 'calca', label: 'CALÇA', emoji: '👖' },
-  { key: 'calcado', label: 'CALÇADO', emoji: '👟' },
-  { key: 'acessorios', label: 'ACESSÓRIOS', emoji: '🎒' },
+  { key: 'corpo', label: 'Corpo', emoji: '' },
+  { key: 'cabelo', label: 'Cabelo', emoji: '' },
+  { key: 'olhos', label: 'Olhos', emoji: '' },
+  { key: 'nariz', label: 'Nariz', emoji: '' },
+  { key: 'boca', label: 'Boca', emoji: '' },
+  { key: 'roupa', label: 'Roupa', emoji: '' },
+  { key: 'calca', label: 'Calça', emoji: '' },
+  { key: 'calcado', label: 'Calçado', emoji: '' },
+  { key: 'acessorios', label: 'Acessórios', emoji: '' },
 ];
-
-// ==================== GAME DATA ====================
 
 export const QUIZ_UNLOCK = 5;
 export const xpFor = (lv: number) => 80 + (lv - 1) * 45;
@@ -144,7 +141,6 @@ export const LEVELS = [
   { cols: 8, rows: 6, time: 160 },
 ];
 
-// Memory card subjects: element symbols
 export const ELEMENT_CARDS = [
   { symbol: 'H', name: 'Hidrogênio', number: 1, color: '#EF4444' },
   { symbol: 'He', name: 'Hélio', number: 2, color: '#F97316' },
@@ -173,34 +169,34 @@ export const ELEMENT_CARDS = [
 ];
 
 export const QUESTIONS = [
-  { t: 'Qual cientista propôs o modelo "pudim de passas"?', opts: ['J.J. Thomson','Rutherford','Bohr','Dalton'], ans: 0, f: 'Thomson (1897) imaginou elétrons dentro de uma esfera positiva!' },
-  { t: 'No experimento de Rutherford, qual folha foi usada?', opts: ['Prata','Ouro','Cobre','Alumínio'], ans: 1, f: 'A folha de ouro era fina o suficiente para partículas alfa!' },
-  { t: 'Segundo Bohr, os elétrons orbitam em:', opts: ['Trajetórias aleatórias','Camadas de energia fixas','Nuvens','Dentro do núcleo'], ans: 1, f: 'Bohr (1913) propôs camadas de energia quantizada!' },
-  { t: 'Quem descobriu o elétron em 1897?', opts: ['Dalton','Rutherford','J.J. Thomson','Schrödinger'], ans: 2, f: 'Thomson usou tubos de raios catódicos para a descoberta!' },
-  { t: 'O modelo quântico descreve elétrons como:', opts: ['Esferas sólidas','Órbitas circulares','Nuvens de probabilidade','Partículas fixas'], ans: 2, f: 'Schrödinger (1926) criou a equação de onda quântica!' },
-  { t: 'Qual partícula NÃO fica no núcleo atômico?', opts: ['Próton','Nêutron','Elétron','Quark'], ans: 2, f: 'Elétrons orbitam ao redor do núcleo!' },
-  { t: 'O número atômico (Z) representa o número de:', opts: ['Nêutrons','Prótons','Massa total','Elétrons+Prótons'], ans: 1, f: 'O número atômico define o elemento químico!' },
-  { t: 'John Dalton descreveu os átomos como:', opts: ['Com núcleo central','Esferas sólidas indivisíveis','Nuvens de elétrons','Planetas em miniatura'], ans: 1, f: 'Em 1803, Dalton imaginou átomos como bolinhas maciças!' },
-  { t: 'Qual foi o primeiro modelo a propor um núcleo central?', opts: ['Dalton','Thomson','Rutherford','Bohr'], ans: 2, f: 'O experimento de 1911 revelou o pequeno e denso núcleo!' },
-  { t: 'A equação de Schrödinger calcula a _____ do elétron:', opts: ['Posição exata','Velocidade','Probabilidade de encontrá-lo','Massa'], ans: 2, f: 'Mecânica quântica: não há posição exata, apenas probabilidade!' },
-  { t: 'Qual o símbolo do elemento Hélio?', opts: ['H','He','Hl','Hi'], ans: 1, f: 'Hélio (He) é o segundo elemento da tabela periódica!' },
-  { t: 'Qual elemento tem número atômico 6?', opts: ['Nitrogênio','Oxigênio','Carbono','Boro'], ans: 2, f: 'Carbono (C) é a base da vida orgânica!' },
-  { t: 'O ouro (Au) tem número atômico:', opts: ['47','79','29','82'], ans: 1, f: 'Ouro (Au) - número atômico 79, metal nobre!' },
-  { t: 'Qual destes é um gás nobre?', opts: ['Oxigênio','Nitrogênio','Neônio','Cloro'], ans: 2, f: 'Gases nobres: He, Ne, Ar, Kr, Xe, Rn - muito estáveis!' },
-  { t: 'O ferro (Fe) pertence a qual grupo?', opts: ['Gases nobres','Metais de transição','Alcalinos','Halogênios'], ans: 1, f: 'Ferro é um metal de transição, fundamental para a indústria!' },
+  { t: 'Qual cientista propôs o modelo "pudim de passas"?', opts: ['J.J. Thomson','Rutherford','Bohr','Dalton'], ans: 0, f: 'Thomson imaginou elétrons distribuídos em uma esfera positiva.' },
+  { t: 'No experimento de Rutherford, qual folha foi usada?', opts: ['Prata','Ouro','Cobre','Alumínio'], ans: 1, f: 'A folha de ouro era fina o bastante para observar o desvio das partículas alfa.' },
+  { t: 'Segundo Bohr, os elétrons orbitam em:', opts: ['Trajetórias aleatórias','Camadas de energia fixas','Nuvens','Dentro do núcleo'], ans: 1, f: 'Bohr propôs níveis de energia quantizados.' },
+  { t: 'Quem descobriu o elétron em 1897?', opts: ['Dalton','Rutherford','J.J. Thomson','Schrödinger'], ans: 2, f: 'A descoberta veio dos experimentos com raios catódicos.' },
+  { t: 'O modelo quântico descreve elétrons como:', opts: ['Esferas sólidas','Órbitas circulares','Nuvens de probabilidade','Partículas fixas'], ans: 2, f: 'A mecânica quântica trabalha com probabilidade e não com órbitas fixas.' },
+  { t: 'Qual partícula NÃO fica no núcleo atômico?', opts: ['Próton','Nêutron','Elétron','Quark'], ans: 2, f: 'Elétrons ocupam a eletrosfera ao redor do núcleo.' },
+  { t: 'O número atômico (Z) representa o número de:', opts: ['Nêutrons','Prótons','Massa total','Elétrons + Prótons'], ans: 1, f: 'O número de prótons identifica o elemento químico.' },
+  { t: 'John Dalton descreveu os átomos como:', opts: ['Com núcleo central','Esferas sólidas indivisíveis','Nuvens de elétrons','Planetas em miniatura'], ans: 1, f: 'Dalton comparava o átomo a uma esfera maciça.' },
+  { t: 'Qual foi o primeiro modelo a propor um núcleo central?', opts: ['Dalton','Thomson','Rutherford','Bohr'], ans: 2, f: 'Rutherford identificou um núcleo pequeno e denso.' },
+  { t: 'A equação de Schrödinger calcula a _____ do elétron:', opts: ['Posição exata','Velocidade','Probabilidade de encontrá-lo','Massa'], ans: 2, f: 'O modelo quântico calcula regiões prováveis de presença do elétron.' },
+  { t: 'Qual o símbolo do elemento Hélio?', opts: ['H','He','Hl','Hi'], ans: 1, f: 'O símbolo correto é He.' },
+  { t: 'Qual elemento tem número atômico 6?', opts: ['Nitrogênio','Oxigênio','Carbono','Boro'], ans: 2, f: 'O Carbono é o elemento de número atômico 6.' },
+  { t: 'O ouro (Au) tem número atômico:', opts: ['47','79','29','82'], ans: 1, f: 'O ouro tem número atômico 79.' },
+  { t: 'Qual destes é um gás nobre?', opts: ['Oxigênio','Nitrogênio','Neônio','Cloro'], ans: 2, f: 'Neônio é um gás nobre.' },
+  { t: 'O ferro (Fe) pertence a qual grupo?', opts: ['Gases nobres','Metais de transição','Alcalinos','Halogênios'], ans: 1, f: 'O ferro é um metal de transição.' },
 ];
 
 export const ACHIEVEMENTS = [
-  { k: 'first_game', ico: '🎮', n: 'Primeiro Jogo', d: 'Complete sua primeira fase' },
-  { k: 'no_errors', ico: '🎯', n: 'Perfeição', d: 'Fase concluída sem erros' },
-  { k: 'speed_demon', ico: '⚡', n: 'Relâmpago', d: 'Fase em menos de 30 segundos' },
-  { k: 'combo_5', ico: '🔥', n: 'Combo x5', d: '5 acertos consecutivos' },
-  { k: 'level_5', ico: '⭐', n: 'Cientista Jr.', d: 'Alcance o Nível 5' },
-  { k: 'level_10', ico: '🏆', n: 'Mestre Atômico', d: 'Alcance o Nível 10' },
-  { k: 'quiz_perfect', ico: '🧪', n: '100% no Quiz', d: 'Acerte todas as questões' },
-  { k: 'rich', ico: '💰', n: 'Magnata', d: 'Acumule 500+ moedas' },
-  { k: 'shopper', ico: '🛒', n: 'Comprador', d: 'Compre 3 itens na loja' },
-  { k: 'collector', ico: '💎', n: 'Colecionador', d: 'Tenha 10+ itens' },
+  { k: 'first_game', ico: 'JG', n: 'Primeiro Jogo', d: 'Complete sua primeira fase' },
+  { k: 'no_errors', ico: 'PF', n: 'Perfeição', d: 'Fase concluída sem erros' },
+  { k: 'speed_demon', ico: 'SP', n: 'Relâmpago', d: 'Fase em menos de 30 segundos' },
+  { k: 'combo_5', ico: 'C5', n: 'Combo x5', d: '5 acertos consecutivos' },
+  { k: 'level_5', ico: 'L5', n: 'Cientista Jr.', d: 'Alcance o Nível 5' },
+  { k: 'level_10', ico: 'L10', n: 'Mestre Atômico', d: 'Alcance o Nível 10' },
+  { k: 'quiz_perfect', ico: 'QZ', n: 'Quiz Perfeito', d: 'Acerte todas as questões' },
+  { k: 'rich', ico: '500', n: 'Magnata', d: 'Acumule 500+ moedas' },
+  { k: 'shopper', ico: '3X', n: 'Comprador', d: 'Compre 3 itens na loja' },
+  { k: 'collector', ico: '10+', n: 'Colecionador', d: 'Tenha 10+ itens' },
 ];
 
 export const MISSIONS = [

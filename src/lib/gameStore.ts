@@ -1,6 +1,7 @@
 import { xpFor } from './gameData';
 
 export interface AvatarConfig {
+  gender?: 'male' | 'female';
   skinTone: number;
   bodyType: number;
   hair: number;
@@ -28,7 +29,7 @@ export interface UserData {
   totalScore: number;
   quizScore: number;
   games: number;
-  ownedItems: string[]; // "category:id" format
+  ownedItems: string[];
   ach: string[];
   history: { type: string; score: number; date: string; detail: string }[];
   dailyDate: string;
@@ -62,9 +63,18 @@ export const DB = {
 
 export function defaultAvatar(): AvatarConfig {
   return {
-    skinTone: 0, bodyType: 0, hair: 0, hairColor: 0,
-    eyes: 0, nose: 0, mouth: 0, shirt: 0,
-    pants: 4, shoes: 0, accessory: 0,
+    gender: 'male',
+    skinTone: 1,
+    bodyType: 0,
+    hair: 1,
+    hairColor: 1,
+    eyes: 0,
+    nose: 0,
+    mouth: 0,
+    shirt: 0,
+    pants: 1,
+    shoes: 0,
+    accessory: 0,
   };
 }
 
@@ -72,7 +82,7 @@ export function createUser(name: string, pwd: string): UserData {
   return {
     id: 'u' + Date.now() + Math.random().toString(36).slice(2, 6),
     name: name.trim(), pwd,
-    lv: 1, xp: 0, xpNext: xpFor(1), coins: 224, gems: 0,
+    lv: 1, xp: 0, xpNext: xpFor(1), coins: 260, gems: 0,
     avatar: defaultAvatar(),
     charCreated: false,
     totalScore: 0, quizScore: 0, games: 0,

@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useGame } from '@/contexts/GameContext';
 import { ACHIEVEMENTS } from '@/lib/gameData';
 import { SFX } from '@/lib/sounds';
+import { Atom, Sparkles, Trophy } from 'lucide-react';
 
 export default function GameModals() {
   const { showLevelUp, setShowLevelUp, showAchievement, setShowAchievement } = useGame();
@@ -10,23 +11,15 @@ export default function GameModals() {
     <>
       <AnimatePresence>
         {showLevelUp && (
-          <motion.div
-            className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 backdrop-blur-sm"
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            onClick={() => setShowLevelUp(null)}
-          >
-            <motion.div
-              className="glass-card p-8 text-center max-w-xs shadow-xl"
-              initial={{ scale: 0.5 }} animate={{ scale: 1 }} exit={{ scale: 0.8 }}
-              transition={{ type: 'spring', damping: 15 }}
-              onClick={e => e.stopPropagation()}
-            >
-              <div className="text-6xl mb-3 animate-float">🎉</div>
-              <h2 className="font-display text-2xl text-primary mb-2">LEVEL UP!</h2>
-              <p className="font-display text-4xl text-accent mb-4">{showLevelUp}</p>
-              <button onClick={() => { SFX.click(); setShowLevelUp(null); }}
-                className="btn-primary text-sm w-full">
-                INCRÍVEL! ⚡
+          <motion.div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 backdrop-blur-sm" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowLevelUp(null)}>
+            <motion.div className="glass-card p-8 text-center max-w-xs shadow-xl" initial={{ scale: 0.7, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.92, opacity: 0 }} transition={{ type: 'spring', damping: 18 }} onClick={e => e.stopPropagation()}>
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl avatar-stage">
+                <Atom size={28} className="text-primary" />
+              </div>
+              <h2 className="font-display text-2xl text-foreground mb-2">Level Up</h2>
+              <p className="font-display text-5xl text-primary mb-4">{showLevelUp}</p>
+              <button onClick={() => { SFX.click(); setShowLevelUp(null); }} className="btn-primary text-sm w-full">
+                Continuar
               </button>
             </motion.div>
           </motion.div>
@@ -38,24 +31,17 @@ export default function GameModals() {
           const ach = ACHIEVEMENTS.find(a => a.k === showAchievement);
           if (!ach) return null;
           return (
-            <motion.div
-              className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 backdrop-blur-sm"
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              onClick={() => setShowAchievement(null)}
-            >
-              <motion.div
-                className="glass-card p-8 text-center max-w-xs shadow-xl"
-                initial={{ scale: 0.5 }} animate={{ scale: 1 }} exit={{ scale: 0.8 }}
-                transition={{ type: 'spring', damping: 15 }}
-                onClick={e => e.stopPropagation()}
-              >
-                <div className="text-6xl mb-3">{ach.ico}</div>
-                <h2 className="font-display text-xl text-accent mb-1">CONQUISTA!</h2>
+            <motion.div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 backdrop-blur-sm" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowAchievement(null)}>
+              <motion.div className="glass-card p-8 text-center max-w-xs shadow-xl" initial={{ scale: 0.7, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.92, opacity: 0 }} transition={{ type: 'spring', damping: 18 }} onClick={e => e.stopPropagation()}>
+                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl avatar-stage">
+                  <Trophy size={26} className="text-accent" />
+                </div>
+                <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full border border-border bg-secondary text-xs font-black text-primary">{ach.ico}</div>
+                <h2 className="font-display text-xl text-foreground mb-1">Conquista liberada</h2>
                 <p className="font-display text-lg text-primary mb-1">{ach.n}</p>
                 <p className="text-muted-foreground text-sm mb-4">{ach.d}</p>
-                <button onClick={() => { SFX.click(); setShowAchievement(null); }}
-                  className="btn-primary text-sm w-full">
-                  DEMAIS! 🏅
+                <button onClick={() => { SFX.click(); setShowAchievement(null); }} className="btn-primary text-sm w-full inline-flex items-center justify-center gap-2">
+                  <Sparkles size={14} /> Fechar
                 </button>
               </motion.div>
             </motion.div>
