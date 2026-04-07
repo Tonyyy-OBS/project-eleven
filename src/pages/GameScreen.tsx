@@ -5,7 +5,7 @@ import { useGame } from '@/contexts/GameContext';
 import { LEVELS, ELEMENT_CARDS } from '@/lib/gameData';
 import { shuf, fmtTime } from '@/lib/gameStore';
 import { SFX } from '@/lib/sounds';
-import { ArrowLeft, RotateCcw, Zap, Clock, Flame, AlertTriangle, Trophy, Atom } from 'lucide-react';
+import { ArrowLeft, RotateCcw, Zap, Clock, Flame, AlertTriangle, Trophy, Atom, Coins } from 'lucide-react';
 
 interface Card { key: string; symbol: string; name: string; color: string; number: number; }
 interface GameState {

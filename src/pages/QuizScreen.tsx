@@ -5,7 +5,7 @@ import { useGame } from '@/contexts/GameContext';
 import { QUESTIONS } from '@/lib/gameData';
 import { shuf } from '@/lib/gameStore';
 import { SFX } from '@/lib/sounds';
-import { ArrowLeft, Trophy, Atom, Clock, Flame, CheckCircle, XCircle, Zap, RotateCcw } from 'lucide-react';
+import { ArrowLeft, Trophy, Atom, Clock, Flame, CheckCircle, XCircle, Zap, RotateCcw, Coins } from 'lucide-react';
 
 type Phase = 'intro' | 'play' | 'result';
 interface QState {
