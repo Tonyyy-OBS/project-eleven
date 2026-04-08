@@ -5,6 +5,7 @@ import { useGame } from '@/contexts/GameContext';
 import { LEVELS, ELEMENT_CARDS } from '@/lib/gameData';
 import { shuf, fmtTime } from '@/lib/gameStore';
 import { SFX } from '@/lib/sounds';
+import MatchParticles from '@/components/MatchParticles';
 import { ArrowLeft, RotateCcw, Zap, Clock, Flame, AlertTriangle, Trophy, Atom, Coins } from 'lucide-react';
 
 interface Card { key: string; symbol: string; name: string; color: string; number: number; }
@@ -25,8 +26,10 @@ export default function GameScreen() {
   const [shakeSet, setShakeSet] = useState<Set<number>>(new Set());
   const [overlay, setOverlay] = useState<{ won: boolean; elapsed: number; score: number; coins: number; xp: number } | null>(null);
   const [comboText, setComboText] = useState<string | null>(null);
+  const [particleTrigger, setParticleTrigger] = useState<{ x: number; y: number; color: string } | null>(null);
   const tickRef = useRef<ReturnType<typeof setInterval>>();
   const gsRef = useRef(gs);
+  const cardRefs = useRef<Map<number, HTMLDivElement>>(new Map());
   gsRef.current = gs;
 
   const startGame = useCallback((lv: number) => {
@@ -48,6 +51,7 @@ export default function GameScreen() {
     }
     cards = shuf(cards).slice(0, total);
     setFlippedSet(new Set()); setMatchedSet(new Set()); setShakeSet(new Set()); setOverlay(null);
+    setParticleTrigger(null);
     const state: GameState = {
       lv, cols: cfg.cols, rows: cfg.rows, time: cfg.time, total: cards.length,
       score: 0, errors: 0, combo: 0, maxCombo: 0, matched: 0,
@@ -67,6 +71,13 @@ export default function GameScreen() {
 
   useEffect(() => { startGame(user?.curLv || 1); return () => { if (tickRef.current) clearInterval(tickRef.current); }; }, []);
 
+  const emitParticles = useCallback((cardIdx: number, color: string) => {
+    const el = cardRefs.current.get(cardIdx);
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    setParticleTrigger({ x: rect.left + rect.width / 2, y: rect.top + rect.height / 2, color });
+  }, []);
+
   const flip = useCallback(async (i: number) => {
     const g = gsRef.current;
     if (!g || g.busy || g.done) return;
@@ -84,8 +95,10 @@ export default function GameScreen() {
         const maxCombo = Math.max(combo, g.maxCombo);
         const score = g.score + 50 + combo * 20;
         const matched = g.matched + 2;
-        await new Promise(r => setTimeout(r, 280));
+        await new Promise(r => setTimeout(r, 350));
         setMatchedSet(prev => new Set([...prev, a, b]));
+        emitParticles(a, ca.color);
+        setTimeout(() => emitParticles(b, cb.color), 100);
         if (combo >= 2) { SFX.combo(combo); setComboText(`COMBO x${combo}!`); setTimeout(() => setComboText(null), 900); }
         else SFX.match();
         trackMission('match_10', 1); trackMission('match_20', 1);
@@ -133,6 +146,8 @@ export default function GameScreen() {
 
   return (
     <motion.div className="fixed inset-0 z-10 flex flex-col overflow-hidden" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+      <MatchParticles trigger={particleTrigger} />
+      
       {/* Top bar */}
       <div className="glass-card mx-3 mt-3 mb-2 px-3 py-2 flex items-center gap-2 rounded-2xl flex-shrink-0">
         <button onClick={() => { if (tickRef.current) clearInterval(tickRef.current); navigate('/hub'); }}
@@ -157,27 +172,48 @@ export default function GameScreen() {
             const isMatched = matchedSet.has(i);
             const isShake = shakeSet.has(i);
             return (
-              <div key={i} className="aspect-square" style={{ perspective: '900px' }}>
+              <div key={i} className="aspect-square" style={{ perspective: '1200px' }}
+                ref={el => { if (el) cardRefs.current.set(i, el); }}>
                 <motion.div onClick={() => flip(i)}
-                  className="w-full h-full relative cursor-pointer"
+                  className={`w-full h-full relative cursor-pointer card-3d ${isMatched ? 'matched-glow' : ''}`}
                   style={{ transformStyle: 'preserve-3d' }}
                   animate={{
                     rotateY: isFlipped || isMatched ? 180 : 0,
-                    x: isShake ? [0, -5, 5, -5, 5, 0] : 0,
-                    scale: isMatched ? [1, 1.06, 1] : 1,
+                    x: isShake ? [0, -6, 6, -6, 6, 0] : 0,
+                    scale: isMatched ? [1, 1.1, 0.95, 1] : 1,
                   }}
-                  transition={{ duration: isShake ? 0.35 : 0.4, ease: [0.175, 0.885, 0.32, 1.275] }}>
-                  {/* Back */}
-                  <div className="absolute inset-0 rounded-xl flex items-center justify-center bg-gradient-to-br from-primary/90 to-primary/60 border border-primary/30 shadow-md"
-                    style={{ backfaceVisibility: 'hidden' }}>
-                    <Atom size={20} className="text-white/20" />
+                  transition={{
+                    rotateY: { duration: 0.5, ease: [0.4, 0, 0.2, 1] },
+                    x: { duration: 0.4 },
+                    scale: { duration: 0.5, ease: 'easeOut' },
+                  }}>
+                  {/* Back of card */}
+                  <div className="absolute inset-0 rounded-xl flex items-center justify-center border border-primary/30 shadow-lg card-back"
+                    style={{
+                      backfaceVisibility: 'hidden',
+                      background: 'linear-gradient(145deg, hsl(var(--primary) / 0.85), hsl(var(--primary) / 0.5))',
+                    }}>
+                    <div className="relative">
+                      <Atom size={22} className="text-white/25" />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-2 h-2 rounded-full bg-white/15" />
+                      </div>
+                    </div>
                   </div>
-                  {/* Front */}
-                  <div className={`absolute inset-0 rounded-xl flex flex-col items-center justify-center border shadow-md transition-colors ${
-                    isMatched ? 'border-emerald-400/60 bg-emerald-500/10' : 'border-border/50 bg-card/90'}`}
+                  {/* Front of card */}
+                  <div className={`absolute inset-0 rounded-xl flex flex-col items-center justify-center border shadow-lg transition-all duration-300 ${
+                    isMatched
+                      ? 'border-emerald-400/60 bg-emerald-500/10 shadow-emerald-500/20'
+                      : 'border-border/50 bg-card/95'}`}
                     style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}>
-                    <span className="text-[0.5rem] text-muted-foreground font-bold">{card.number}</span>
-                    <span className="font-display text-lg md:text-xl leading-none" style={{ color: card.color }}>{card.symbol}</span>
+                    <span className="text-[0.5rem] text-muted-foreground font-bold opacity-60">{card.number}</span>
+                    <motion.span
+                      className="font-display text-lg md:text-xl leading-none"
+                      style={{ color: card.color }}
+                      animate={isMatched ? { scale: [1, 1.2, 1] } : {}}
+                      transition={{ duration: 0.4 }}>
+                      {card.symbol}
+                    </motion.span>
                     <span className="text-[0.45rem] text-muted-foreground leading-tight text-center px-0.5 mt-0.5">{card.name}</span>
                   </div>
                 </motion.div>
@@ -189,12 +225,15 @@ export default function GameScreen() {
         {/* Combo text */}
         <AnimatePresence>
           {comboText && (
-            <motion.div className="fixed top-1/3 left-1/2 font-display text-2xl z-[300] pointer-events-none whitespace-nowrap flex items-center gap-2"
-              initial={{ opacity: 0, scale: 0.5, x: '-50%', y: '-50%' }}
-              animate={{ opacity: 1, scale: 1.2, x: '-50%', y: '-80%' }}
-              exit={{ opacity: 0, y: '-120%' }}>
-              <Flame size={24} className="text-accent" />
-              <span className="text-accent" style={{ textShadow: '0 2px 12px rgba(245,158,11,0.5)' }}>{comboText}</span>
+            <motion.div className="fixed top-1/3 left-1/2 font-display text-3xl z-[300] pointer-events-none whitespace-nowrap flex items-center gap-2"
+              initial={{ opacity: 0, scale: 0.3, x: '-50%', y: '-50%' }}
+              animate={{ opacity: 1, scale: 1.3, x: '-50%', y: '-80%' }}
+              exit={{ opacity: 0, scale: 0.8, y: '-150%' }}
+              transition={{ type: 'spring', damping: 12 }}>
+              <Flame size={28} className="text-accent" />
+              <span className="text-accent font-display" style={{ textShadow: '0 0 20px rgba(245,158,11,0.6), 0 4px 16px rgba(245,158,11,0.3)' }}>
+                {comboText}
+              </span>
             </motion.div>
           )}
         </AnimatePresence>
@@ -206,10 +245,12 @@ export default function GameScreen() {
           <motion.div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-md"
             initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             <motion.div className="glass-card p-7 max-w-sm w-[92%] text-center shadow-2xl"
-              initial={{ scale: 0.6 }} animate={{ scale: 1 }} transition={{ type: 'spring', damping: 15 }}>
-              <div className="mx-auto mb-3 w-16 h-16 rounded-2xl avatar-stage flex items-center justify-center">
+              initial={{ scale: 0.5, rotateX: 20 }} animate={{ scale: 1, rotateX: 0 }} transition={{ type: 'spring', damping: 15 }}>
+              <motion.div className="mx-auto mb-3 w-16 h-16 rounded-2xl avatar-stage flex items-center justify-center"
+                animate={{ rotate: overlay.won ? [0, 10, -10, 0] : [0, -5, 5, 0] }}
+                transition={{ duration: 0.5 }}>
                 {overlay.won ? <Trophy size={28} className="text-accent" /> : <AlertTriangle size={28} className="text-destructive" />}
-              </div>
+              </motion.div>
               <h2 className="font-display text-xl text-foreground mb-4">
                 {overlay.won ? 'FASE COMPLETA!' : 'TEMPO ESGOTADO!'}
               </h2>
@@ -218,34 +259,38 @@ export default function GameScreen() {
                   { icon: Clock, l: 'Tempo', v: fmtTime(overlay.elapsed) },
                   { icon: AlertTriangle, l: 'Erros', v: String(gs.errors) },
                   { icon: Flame, l: 'Combo Máx.', v: `x${gs.maxCombo}` },
-                ].map(row => (
-                  <div key={row.l} className="flex items-center justify-between text-sm text-muted-foreground">
+                ].map((row, idx) => (
+                  <motion.div key={row.l} className="flex items-center justify-between text-sm text-muted-foreground"
+                    initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 + idx * 0.1 }}>
                     <span className="flex items-center gap-1.5"><row.icon size={12} /> {row.l}</span>
                     <span className="font-bold text-foreground">{row.v}</span>
-                  </div>
+                  </motion.div>
                 ))}
                 <div className="border-t border-border/20 pt-2 flex flex-col gap-1 mt-1">
                   {[
                     { icon: Trophy, l: 'Score', v: String(overlay.score) },
                     { icon: Coins, l: 'Moedas', v: `+${overlay.coins}` },
                     { icon: Zap, l: 'XP', v: `+${overlay.xp}` },
-                  ].map(row => (
-                    <div key={row.l} className="flex items-center justify-between text-sm font-bold">
+                  ].map((row, idx) => (
+                    <motion.div key={row.l} className="flex items-center justify-between text-sm font-bold"
+                      initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.6 + idx * 0.1 }}>
                       <span className="flex items-center gap-1.5 text-muted-foreground"><row.icon size={12} /> {row.l}</span>
                       <span className="text-accent font-display">{row.v}</span>
-                    </div>
+                    </motion.div>
                   ))}
                 </div>
               </div>
               <div className="flex gap-2 justify-center">
-                <button onClick={() => startGame(gs.lv)}
-                  className="bg-secondary/60 text-foreground px-4 py-2.5 rounded-xl text-sm font-bold flex items-center gap-1.5 hover:bg-secondary transition-colors border border-border/30">
+                <motion.button onClick={() => startGame(gs.lv)}
+                  className="bg-secondary/60 text-foreground px-4 py-2.5 rounded-xl text-sm font-bold flex items-center gap-1.5 hover:bg-secondary transition-colors border border-border/30"
+                  whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                   <RotateCcw size={14} /> Repetir
-                </button>
+                </motion.button>
                 {overlay.won && (
-                  <button onClick={() => startGame(gs.lv + 1)} className="btn-primary text-sm flex items-center gap-1.5">
+                  <motion.button onClick={() => startGame(gs.lv + 1)} className="btn-primary text-sm flex items-center gap-1.5"
+                    whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                     PRÓXIMA <Zap size={14} />
-                  </button>
+                  </motion.button>
                 )}
               </div>
             </motion.div>
