@@ -49,7 +49,11 @@ export default function HubScreen() {
         <div className="flex items-center gap-3">
           <motion.div className="w-12 h-12 rounded-full border-2 border-primary/60 overflow-hidden flex items-center justify-center bg-secondary/40 cursor-pointer"
             onClick={() => navigate('/profile')} whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.95 }}>
-            <Avatar config={user.avatar || defaultAvatar()} size={40} />
+            {user.avatarDrawing ? (
+              <img src={user.avatarDrawing} alt="Avatar" className="w-full h-full object-cover" />
+            ) : (
+              <Avatar config={user.avatar || defaultAvatar()} size={40} />
+            )}
           </motion.div>
           <div className="flex flex-col gap-1">
             <span className="font-display text-sm text-foreground">{user.name}</span>
