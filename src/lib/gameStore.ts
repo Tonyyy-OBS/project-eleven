@@ -25,6 +25,7 @@ export interface UserData {
   coins: number;
   gems: number;
   avatar: AvatarConfig;
+  avatarDrawing?: string;
   charCreated: boolean;
   totalScore: number;
   quizScore: number;
