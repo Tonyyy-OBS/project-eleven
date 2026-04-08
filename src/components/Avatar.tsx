@@ -5,299 +5,641 @@ interface AvatarProps {
   config: AvatarConfig;
   size?: number;
   className?: string;
+  showShadow?: boolean;
 }
 
-const SHIRT_COLORS = ['#2D3748', '#3B82F6', '#F1F5F9', '#F59E0B', '#06B6D4', '#E879F9', '#22C55E', '#111827'];
-const PANTS_COLORS = ['#374151', '#1E3A8A', '#111827', '#C4A97D', '#2563EB', '#0F172A', '#E5E7EB', '#4B5563'];
-const SHOE_COLORS = ['#F8FAFC', '#111827', '#7C4A23', '#06B6D4', '#1E293B', '#DC2626', '#0F172A'];
+// Derived shade utility
+function shade(hex: string, amount: number) {
+  const v = hex.replace('#', '');
+  const num = parseInt(v, 16);
+  const r = Math.max(0, Math.min(255, (num >> 16) + amount));
+  const g = Math.max(0, Math.min(255, ((num >> 8) & 0xff) + amount));
+  const b = Math.max(0, Math.min(255, (num & 0xff) + amount));
+  return `#${(b | (g << 8) | (r << 16)).toString(16).padStart(6, '0')}`;
+}
 
-export default function Avatar({ config, size = 84, className = '' }: AvatarProps) {
+const SHIRT_FILLS = [
+  // 0: Camiseta Grafite
+  { main: '#3B3F47', detail: '#2D3135' },
+  // 1: Jaqueta Azul
+  { main: '#2563EB', detail: '#1D4ED8' },
+  // 2: Jaleco Atômico
+  { main: '#EFF3F8', detail: '#D1D5DB' },
+  // 3: Moletom Âmbar
+  { main: '#D97706', detail: '#B45309' },
+  // 4: Camisa Ciano
+  { main: '#06B6D4', detail: '#0891B2' },
+  // 5: Blusa Rose
+  { main: '#F472B6', detail: '#EC4899' },
+  // 6: Jaqueta Neon
+  { main: '#10B981', detail: '#059669' },
+  // 7: Blazer Noite
+  { main: '#1E293B', detail: '#0F172A' },
+];
+
+const PANTS_FILLS = [
+  { main: '#4B5563', detail: '#374151' }, // Slim
+  { main: '#1E3A8A', detail: '#1E2D5C' }, // Jeans Escuro
+  { main: '#111827', detail: '#0A0E14' }, // Tática Preta
+  { main: '#C4A97D', detail: '#A68B5B' }, // Areia
+  { main: '#2563EB', detail: '#1D4ED8' }, // Azul Cobalto
+  { main: '#0F172A', detail: '#080C14' }, // Noite
+  { main: '#D1D5DB', detail: '#B0B5BD' }, // Clara
+  { main: '#374151', detail: '#2D3440' }, // Chumbo
+];
+
+const SHOE_FILLS = [
+  { main: '#F0F0F0', sole: '#D4D4D4', accent: '#E5E5E5' }, // Branco
+  { main: '#1F1F1F', sole: '#111', accent: '#333' }, // Escuro
+  { main: '#7C4A23', sole: '#5C3517', accent: '#9A6B3C' }, // Bota Marrom
+  { main: '#06B6D4', sole: '#0891B2', accent: '#22D3EE' }, // Runner Ciano
+  { main: '#1E293B', sole: '#0F172A', accent: '#334155' }, // Social
+  { main: '#DC2626', sole: '#B91C1C', accent: '#EF4444' }, // Rubi
+  { main: '#292524', sole: '#1C1917', accent: '#44403C' }, // Bota Tática
+];
+
+export default function Avatar({ config, size = 84, className = '', showShadow = true }: AvatarProps) {
   const skin = SKIN_TONES[config.skinTone] || SKIN_TONES[0];
-  const hair = HAIR_COLORS[config.hairColor] || HAIR_COLORS[0];
-  const gender = config.gender ?? (config.bodyType >= 3 ? 'female' : 'male');
-  const shirt = SHIRT_COLORS[config.shirt] || SHIRT_COLORS[0];
-  const pants = PANTS_COLORS[config.pants] || PANTS_COLORS[0];
-  const shoes = SHOE_COLORS[config.shoes] || SHOE_COLORS[0];
-  const skinDark = shade(skin, -20);
-  const skinBlush = shade(skin, -10);
-  const hairDark = shade(hair, -25);
-  const isFemale = gender === 'female';
+  const hairColor = HAIR_COLORS[config.hairColor] || HAIR_COLORS[0];
+  const isFemale = (config.gender ?? 'male') === 'female';
+  const skinDark = shade(skin, -25);
+  const skinLight = shade(skin, 15);
+  const hairDark = shade(hairColor, -30);
 
-  // Body proportions
-  const shoulderW = isFemale ? 36 : 42;
-  const hipW = isFemale ? 34 : 30;
-  const waistW = isFemale ? 28 : 34;
-  const cx = 70;
+  const sf = SHIRT_FILLS[config.shirt] || SHIRT_FILLS[0];
+  const pf = PANTS_FILLS[config.pants] || PANTS_FILLS[0];
+  const shf = SHOE_FILLS[config.shoes] || SHOE_FILLS[0];
+
+  // Body geometry - centered at x=100, viewBox 0 0 200 340
+  const cx = 100;
+  const headCy = 58;
+  const headRx = 30;
+  const headRy = 33;
+  const neckY = 88;
+  const shoulderY = 100;
+  const shoulderW = isFemale ? 38 : 44;
+  const waistY = isFemale ? 150 : 155;
+  const waistW = isFemale ? 30 : 38;
+  const hipY = 175;
+  const hipW = isFemale ? 38 : 34;
+
+  // Leg geometry
+  const legInset = 6;
+  const legTop = hipY;
+  const legBot = 280;
+  const legW = 16;
+  const leftLegX = cx - legInset - legW / 2;
+  const rightLegX = cx + legInset - legW / 2;
+
+  // Arm geometry
+  const armW = 13;
+  const armTop = shoulderY + 2;
+  const armBot = 195;
+  const leftArmX = cx - shoulderW / 2 - armW / 2 + 2;
+  const rightArmX = cx + shoulderW / 2 - armW / 2 - 2;
+
+  const uid = `av-${config.skinTone}-${config.hair}`;
 
   return (
     <svg
       className={className}
-      viewBox="0 0 140 260"
+      viewBox="0 0 200 340"
       xmlns="http://www.w3.org/2000/svg"
       width={size}
-      height={size * (260 / 140)}
+      height={size * (340 / 200)}
       style={{ display: 'block', flexShrink: 0 }}
       aria-hidden="true"
     >
       <defs>
-        <radialGradient id={`skin-${config.skinTone}`} cx="50%" cy="30%">
-          <stop offset="0%" stopColor={shade(skin, 8)} />
+        <radialGradient id={`${uid}-skinG`} cx="50%" cy="35%">
+          <stop offset="0%" stopColor={skinLight} />
           <stop offset="100%" stopColor={skin} />
         </radialGradient>
-        <linearGradient id="shadow-grad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#000" stopOpacity="0.08" />
-          <stop offset="100%" stopColor="#000" stopOpacity="0.25" />
+        <linearGradient id={`${uid}-shirtG`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={sf.main} />
+          <stop offset="100%" stopColor={sf.detail} />
+        </linearGradient>
+        <linearGradient id={`${uid}-pantsG`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={pf.main} />
+          <stop offset="100%" stopColor={pf.detail} />
         </linearGradient>
       </defs>
 
       {/* Ground shadow */}
-      <ellipse cx="70" cy="248" rx="26" ry="6" fill="rgba(0,0,0,0.18)" />
+      {showShadow && <ellipse cx={cx} cy="326" rx="32" ry="8" fill="rgba(0,0,0,0.15)" />}
 
-      {/* LEGS - behind torso */}
-      <rect x="56" y="160" width="13" height="58" rx="6.5" fill={skin} />
-      <rect x="71" y="160" width="13" height="58" rx="6.5" fill={skin} />
-      <rect x="56" y="160" width="5" height="58" rx="2.5" fill={skinDark} opacity="0.12" />
-      <rect x="71" y="160" width="5" height="58" rx="2.5" fill={skinDark} opacity="0.08" />
+      {/* === LEGS (behind torso) === */}
+      {/* Left leg skin */}
+      <rect x={leftLegX} y={legTop} width={legW} height={legBot - legTop} rx={legW / 2} fill={skin} />
+      <rect x={leftLegX} y={legTop} width={legW * 0.35} height={legBot - legTop} rx={legW / 4} fill={skinDark} opacity="0.08" />
+      {/* Right leg skin */}
+      <rect x={rightLegX} y={legTop} width={legW} height={legBot - legTop} rx={legW / 2} fill={skin} />
 
-      {/* PANTS */}
-      {renderPants(config.pants, pants)}
+      {/* === PANTS === */}
+      {renderPants(config.pants, pf, cx, hipY, hipW, leftLegX, rightLegX, legW, legBot, uid)}
 
-      {/* SHOES */}
-      {renderShoes(config.shoes, shoes)}
+      {/* === SHOES === */}
+      {renderShoes(config.shoes, shf, leftLegX, rightLegX, legW, legBot)}
 
-      {/* TORSO - skin base */}
-      <path d={buildTorso(cx, shoulderW, waistW, hipW, isFemale)} fill={skin} />
-      <path d={buildTorso(cx, shoulderW, waistW, hipW, isFemale)} fill={skinDark} opacity="0.06" />
+      {/* === TORSO (skin) === */}
+      <path
+        d={`M ${cx - shoulderW / 2} ${shoulderY}
+            Q ${cx} ${shoulderY - 6} ${cx + shoulderW / 2} ${shoulderY}
+            L ${cx + waistW / 2} ${waistY}
+            L ${cx + hipW / 2} ${hipY}
+            Q ${cx} ${hipY + 5} ${cx - hipW / 2} ${hipY}
+            L ${cx - waistW / 2} ${waistY}
+            Z`}
+        fill={`url(#${uid}-skinG)`}
+      />
+      {/* Torso shading */}
+      <path
+        d={`M ${cx - shoulderW / 2} ${shoulderY}
+            Q ${cx} ${shoulderY - 6} ${cx + shoulderW / 2} ${shoulderY}
+            L ${cx + waistW / 2} ${waistY}
+            L ${cx + hipW / 2} ${hipY}
+            Q ${cx} ${hipY + 5} ${cx - hipW / 2} ${hipY}
+            L ${cx - waistW / 2} ${waistY}
+            Z`}
+        fill={skinDark}
+        opacity="0.04"
+      />
 
-      {/* SHIRT */}
-      {renderShirt(config.shirt, shirt, cx, shoulderW, waistW, hipW, isFemale)}
+      {/* === SHIRT === */}
+      {renderShirt(config.shirt, sf, cx, shoulderY, shoulderW, waistY, waistW, hipY, hipW, isFemale, uid)}
 
-      {/* ARMS */}
-      <rect x="35" y="100" width="13" height="52" rx="6.5" fill={skin} transform="rotate(6 41 126)" />
-      <rect x="92" y="100" width="13" height="52" rx="6.5" fill={skin} transform="rotate(-6 98 126)" />
+      {/* === ARMS === */}
+      {/* Left arm */}
+      <rect x={leftArmX} y={armTop} width={armW} height={armBot - armTop} rx={armW / 2} fill={skin} transform={`rotate(8 ${leftArmX + armW / 2} ${armTop})`} />
+      {/* Right arm */}
+      <rect x={rightArmX} y={armTop} width={armW} height={armBot - armTop} rx={armW / 2} fill={skin} transform={`rotate(-8 ${rightArmX + armW / 2} ${armTop})`} />
+
+      {/* Sleeves on arms */}
+      {renderSleeves(config.shirt, sf, leftArmX, rightArmX, armW, armTop, uid)}
+
       {/* Hands */}
-      <ellipse cx="39" cy="154" rx="7" ry="6.5" fill={skinBlush} />
-      <ellipse cx="101" cy="154" rx="7" ry="6.5" fill={skinBlush} />
+      <ellipse cx={leftArmX + armW / 2 - 6} cy={armBot + 2} rx="8" ry="7" fill={skinLight} />
+      <ellipse cx={rightArmX + armW / 2 + 6} cy={armBot + 2} rx="8" ry="7" fill={skinLight} />
+      {/* Finger lines */}
+      <g stroke={skinDark} strokeWidth="0.8" opacity="0.25" strokeLinecap="round">
+        <line x1={leftArmX - 2} y1={armBot} x2={leftArmX - 4} y2={armBot + 6} />
+        <line x1={leftArmX} y1={armBot + 1} x2={leftArmX - 2} y2={armBot + 8} />
+        <line x1={leftArmX + 2} y1={armBot + 2} x2={leftArmX} y2={armBot + 9} />
+        <line x1={rightArmX + armW + 2} y1={armBot} x2={rightArmX + armW + 4} y2={armBot + 6} />
+        <line x1={rightArmX + armW} y1={armBot + 1} x2={rightArmX + armW + 2} y2={armBot + 8} />
+        <line x1={rightArmX + armW - 2} y1={armBot + 2} x2={rightArmX + armW} y2={armBot + 9} />
+      </g>
 
-      {/* NECK */}
-      <rect x="63" y="78" width="14" height="16" rx="7" fill={skin} />
+      {/* === NECK === */}
+      <rect x={cx - 8} y={neckY - 4} width="16" height="18" rx="8" fill={skin} />
+      <rect x={cx - 8} y={neckY - 4} width="5" height="18" rx="2.5" fill={skinDark} opacity="0.06" />
 
-      {/* HEAD */}
-      <ellipse cx="70" cy="52" rx="27" ry="29" fill={`url(#skin-${config.skinTone})`} />
+      {/* === HEAD === */}
+      <ellipse cx={cx} cy={headCy} rx={headRx} ry={headRy} fill={`url(#${uid}-skinG)`} />
+      
       {/* Ears */}
-      <ellipse cx="44" cy="55" rx="5" ry="6.5" fill={skin} />
-      <ellipse cx="44" cy="55" rx="3" ry="4" fill={skinDark} opacity="0.12" />
-      <ellipse cx="96" cy="55" rx="5" ry="6.5" fill={skin} />
-      <ellipse cx="96" cy="55" rx="3" ry="4" fill={skinDark} opacity="0.12" />
+      <ellipse cx={cx - headRx - 2} cy={headCy + 4} rx="6" ry="8" fill={skin} />
+      <ellipse cx={cx - headRx - 2} cy={headCy + 4} rx="3.5" ry="5" fill={skinDark} opacity="0.1" />
+      <ellipse cx={cx + headRx + 2} cy={headCy + 4} rx="6" ry="8" fill={skin} />
+      <ellipse cx={cx + headRx + 2} cy={headCy + 4} rx="3.5" ry="5" fill={skinDark} opacity="0.1" />
 
-      {/* Eyebrows */}
-      <path d="M 53 44 Q 58 40 64 43" fill="none" stroke={hairDark} strokeWidth="2.2" strokeLinecap="round" opacity="0.5" />
-      <path d="M 76 43 Q 82 40 87 44" fill="none" stroke={hairDark} strokeWidth="2.2" strokeLinecap="round" opacity="0.5" />
+      {/* === EYEBROWS === */}
+      <path d={`M ${cx - 20} ${headCy - 4} Q ${cx - 14} ${headCy - 10} ${cx - 6} ${headCy - 5}`}
+        fill="none" stroke={hairDark} strokeWidth="2.5" strokeLinecap="round" opacity="0.45" />
+      <path d={`M ${cx + 6} ${headCy - 5} Q ${cx + 14} ${headCy - 10} ${cx + 20} ${headCy - 4}`}
+        fill="none" stroke={hairDark} strokeWidth="2.5" strokeLinecap="round" opacity="0.45" />
 
-      {/* EYES */}
-      {renderEyes(config.eyes)}
+      {/* === EYES === */}
+      {renderEyes(config.eyes, cx, headCy)}
 
-      {/* NOSE */}
-      {renderNose(config.nose, skinDark)}
+      {/* === NOSE === */}
+      {renderNose(config.nose, skinDark, cx, headCy)}
 
-      {/* MOUTH */}
-      {renderMouth(config.mouth)}
+      {/* === MOUTH === */}
+      {renderMouth(config.mouth, cx, headCy)}
 
-      {/* Blush */}
-      <ellipse cx="52" cy="68" rx="5.5" ry="2.8" fill="hsl(0 60% 75% / 0.15)" />
-      <ellipse cx="88" cy="68" rx="5.5" ry="2.8" fill="hsl(0 60% 75% / 0.15)" />
+      {/* Cheek blush */}
+      <ellipse cx={cx - 18} cy={headCy + 18} rx="6" ry="3" fill="hsl(0 60% 70% / 0.12)" />
+      <ellipse cx={cx + 18} cy={headCy + 18} rx="6" ry="3" fill="hsl(0 60% 70% / 0.12)" />
 
-      {/* HAIR */}
-      {renderHair(config.hair, hair, hairDark)}
+      {/* === HAIR (on top) === */}
+      {renderHair(config.hair, hairColor, hairDark, cx, headCy, headRx, headRy)}
 
-      {/* ACCESSORY */}
-      {renderAccessory(config.accessory)}
+      {/* === ACCESSORY === */}
+      {renderAccessory(config.accessory, cx, headCy, shoulderY)}
     </svg>
   );
 }
 
-function buildTorso(cx: number, sw: number, ww: number, hw: number, fem: boolean) {
-  const top = 90;
-  const mid = fem ? 125 : 128;
-  const bot = 162;
-  return `M ${cx - sw / 2} ${top} 
-    Q ${cx} ${top - 4} ${cx + sw / 2} ${top} 
-    L ${cx + ww / 2} ${mid} 
-    L ${cx + hw / 2} ${bot} 
-    Q ${cx} ${bot + 4} ${cx - hw / 2} ${bot} 
-    L ${cx - ww / 2} ${mid} Z`;
-}
-
-function shade(hex: string, amount: number) {
-  const v = hex.replace('#', '');
-  const num = parseInt(v, 16);
-  let r = Math.max(0, Math.min(255, (num >> 16) + amount));
-  let g = Math.max(0, Math.min(255, ((num >> 8) & 0xff) + amount));
-  let b = Math.max(0, Math.min(255, (num & 0xff) + amount));
-  return `#${(b | (g << 8) | (r << 16)).toString(16).padStart(6, '0')}`;
-}
-
-function renderHair(id: number, c: string, s: string) {
-  const base = (d: string, extra?: React.ReactNode) => <><path d={d} fill={c} />{extra}</>;
+/* ========== HAIR ========== */
+function renderHair(id: number, c: string, dark: string, cx: number, cy: number, rx: number, ry: number) {
+  const top = cy - ry;
   switch (id) {
     case 0: // Raspado
-      return <path d="M 43 52 Q 43 24 70 20 Q 97 24 97 52 Q 90 42 70 38 Q 50 42 43 52 Z" fill={c} opacity="0.3" />;
+      return (
+        <path d={`M ${cx - rx + 2} ${cy - 2} Q ${cx - rx + 2} ${top} ${cx} ${top - 3} Q ${cx + rx - 2} ${top} ${cx + rx - 2} ${cy - 2}`}
+          fill={c} opacity="0.25" />
+      );
     case 1: // Curto
-      return base("M 43 53 Q 43 22 70 18 Q 97 22 97 53 Q 90 38 70 34 Q 50 38 43 53 Z");
+      return (
+        <path d={`M ${cx - rx + 1} ${cy + 2} Q ${cx - rx - 1} ${top - 4} ${cx} ${top - 8}
+          Q ${cx + rx + 1} ${top - 4} ${cx + rx - 1} ${cy + 2}
+          Q ${cx + rx - 6} ${cy - 10} ${cx} ${cy - 12}
+          Q ${cx - rx + 6} ${cy - 10} ${cx - rx + 1} ${cy + 2} Z`}
+          fill={c} />
+      );
     case 2: // Lateral
-      return <><path d="M 43 53 Q 45 22 72 18 Q 93 20 97 44 L 95 55 Q 90 42 72 38 Q 53 35 43 53 Z" fill={c} /><path d="M 85 26 L 97 38 L 96 56" fill={c} /></>;
+      return (<>
+        <path d={`M ${cx - rx + 1} ${cy + 2} Q ${cx - rx} ${top - 2} ${cx + 4} ${top - 7}
+          Q ${cx + rx - 2} ${top - 4} ${cx + rx} ${cy - 4}
+          Q ${cx + 8} ${cy - 14} ${cx - 6} ${cy - 12}
+          Q ${cx - rx + 4} ${cy - 8} ${cx - rx + 1} ${cy + 2} Z`}
+          fill={c} />
+        <path d={`M ${cx + rx - 5} ${top + 4} L ${cx + rx + 2} ${cy - 6} L ${cx + rx} ${cy + 6}`}
+          fill={c} />
+      </>);
     case 3: // Cacheado
-      return <>{[48, 58, 70, 82, 92].map((x, i) => <circle key={x} cx={x} cy={32 + (i % 2) * 4} r="11" fill={c} />)}<path d="M 43 53 Q 50 42 70 40 Q 90 42 97 53" fill={c} /></>;
+      return (<>
+        {[-16, -6, 6, 16, -11, 0, 11].map((dx, i) => (
+          <circle key={i} cx={cx + dx} cy={top + 2 + (i % 3) * 4} r="13" fill={c} />
+        ))}
+        <path d={`M ${cx - rx - 2} ${cy + 4} Q ${cx - 10} ${cy - 6} ${cx} ${cy - 8} Q ${cx + 10} ${cy - 6} ${cx + rx + 2} ${cy + 4}`}
+          fill={c} />
+      </>);
     case 4: // Moicano
-      return <><path d="M 58 53 L 62 16 H 78 L 82 53 Z" fill={c} /><path d="M 63 22 L 70 10 L 77 22" fill={s} opacity="0.4" /></>;
+      return (<>
+        <path d={`M ${cx - 10} ${cy + 2} L ${cx - 7} ${top - 16} Q ${cx} ${top - 26} ${cx + 7} ${top - 16} L ${cx + 10} ${cy + 2}
+          Q ${cx} ${cy - 6} ${cx - 10} ${cy + 2} Z`}
+          fill={c} />
+        <path d={`M ${cx - 4} ${top - 10} L ${cx} ${top - 22} L ${cx + 4} ${top - 10}`}
+          fill={dark} opacity="0.3" />
+      </>);
     case 5: // Longo
-      return <><path d="M 40 53 Q 40 20 70 16 Q 100 20 100 53 Q 94 35 70 30 Q 46 35 40 53 Z" fill={c} /><path d="M 45 52 L 43 115 L 52 112 L 53 62 Z" fill={c} /><path d="M 95 52 L 97 115 L 88 112 L 87 62 Z" fill={c} /></>;
+      return (<>
+        <path d={`M ${cx - rx - 2} ${cy + 4} Q ${cx - rx - 4} ${top - 6} ${cx} ${top - 10}
+          Q ${cx + rx + 4} ${top - 6} ${cx + rx + 2} ${cy + 4}
+          Q ${cx + rx - 4} ${cy - 8} ${cx} ${cy - 10}
+          Q ${cx - rx + 4} ${cy - 8} ${cx - rx - 2} ${cy + 4} Z`}
+          fill={c} />
+        {/* Long strands */}
+        <path d={`M ${cx - rx - 1} ${cy + 2} Q ${cx - rx - 3} ${cy + 40} ${cx - rx + 4} ${cy + 70}`}
+          stroke={c} strokeWidth="10" fill="none" strokeLinecap="round" />
+        <path d={`M ${cx + rx + 1} ${cy + 2} Q ${cx + rx + 3} ${cy + 40} ${cx + rx - 4} ${cy + 70}`}
+          stroke={c} strokeWidth="10" fill="none" strokeLinecap="round" />
+      </>);
     case 6: // Franja
-      return <><path d="M 43 53 Q 43 22 70 18 Q 97 22 97 53 Q 90 38 70 34 Q 50 38 43 53 Z" fill={c} /><path d="M 44 42 Q 55 55 68 50 Q 78 47 85 38 Q 75 34 62 34 Q 49 34 44 42 Z" fill={s} opacity="0.4" /></>;
+      return (<>
+        <path d={`M ${cx - rx + 1} ${cy + 2} Q ${cx - rx - 1} ${top - 4} ${cx} ${top - 8}
+          Q ${cx + rx + 1} ${top - 4} ${cx + rx - 1} ${cy + 2}
+          Q ${cx + rx - 6} ${cy - 10} ${cx} ${cy - 12}
+          Q ${cx - rx + 6} ${cy - 10} ${cx - rx + 1} ${cy + 2} Z`}
+          fill={c} />
+        {/* Bangs */}
+        <path d={`M ${cx - rx + 3} ${cy - 2} Q ${cx - 8} ${cy + 6} ${cx + 2} ${cy + 2}
+          Q ${cx + 14} ${cy - 2} ${cx + rx - 6} ${cy - 6}`}
+          fill={dark} opacity="0.3" />
+      </>);
     case 7: // Coque
-      return <><path d="M 43 53 Q 43 22 70 18 Q 97 22 97 53 Q 90 38 70 34 Q 50 38 43 53 Z" fill={c} /><circle cx="70" cy="16" r="12" fill={c} /></>;
+      return (<>
+        <path d={`M ${cx - rx + 1} ${cy + 2} Q ${cx - rx - 1} ${top - 4} ${cx} ${top - 8}
+          Q ${cx + rx + 1} ${top - 4} ${cx + rx - 1} ${cy + 2}
+          Q ${cx + rx - 6} ${cy - 10} ${cx} ${cy - 12}
+          Q ${cx - rx + 6} ${cy - 10} ${cx - rx + 1} ${cy + 2} Z`}
+          fill={c} />
+        <circle cx={cx} cy={top - 10} r="14" fill={c} />
+        <circle cx={cx} cy={top - 10} r="7" fill={dark} opacity="0.15" />
+      </>);
     case 8: // Rabo de Cavalo
-      return <><path d="M 43 53 Q 43 22 70 18 Q 97 22 97 53 Q 90 38 70 34 Q 50 38 43 53 Z" fill={c} /><path d="M 92 42 Q 110 46 107 66 Q 104 86 88 95 L 85 82 Q 96 72 96 57 Q 96 48 92 42 Z" fill={c} /></>;
+      return (<>
+        <path d={`M ${cx - rx + 1} ${cy + 2} Q ${cx - rx - 1} ${top - 4} ${cx} ${top - 8}
+          Q ${cx + rx + 1} ${top - 4} ${cx + rx - 1} ${cy + 2}
+          Q ${cx + rx - 6} ${cy - 10} ${cx} ${cy - 12}
+          Q ${cx - rx + 6} ${cy - 10} ${cx - rx + 1} ${cy + 2} Z`}
+          fill={c} />
+        <path d={`M ${cx + rx - 4} ${cy - 4} Q ${cx + rx + 16} ${cy + 6} ${cx + rx + 12} ${cy + 40}
+          Q ${cx + rx + 8} ${cy + 56} ${cx + rx - 2} ${cy + 60}`}
+          stroke={c} strokeWidth="8" fill="none" strokeLinecap="round" />
+      </>);
     case 9: // Afro
-      return <>{[44, 56, 70, 84, 96, 50, 90].map((x, i) => <circle key={`${x}-${i}`} cx={x} cy={30 + (i % 3) * 5} r="14" fill={c} />)}<path d="M 40 55 Q 50 44 70 42 Q 90 44 100 55" fill={c} /></>;
+      return (
+        <ellipse cx={cx} cy={cy - 6} rx={rx + 16} ry={ry + 10} fill={c} />
+      );
     case 10: // Tranças
-      return <><path d="M 43 53 Q 43 22 70 18 Q 97 22 97 53 Q 90 38 70 34 Q 50 38 43 53 Z" fill={c} /><path d="M 48 46 L 44 90" stroke={c} strokeWidth="6" strokeLinecap="round" /><path d="M 60 47 L 57 92" stroke={c} strokeWidth="6" strokeLinecap="round" /><path d="M 80 47 L 83 92" stroke={c} strokeWidth="6" strokeLinecap="round" /><path d="M 92 46 L 96 90" stroke={c} strokeWidth="6" strokeLinecap="round" /></>;
+      return (<>
+        <path d={`M ${cx - rx + 1} ${cy + 2} Q ${cx - rx - 1} ${top - 4} ${cx} ${top - 8}
+          Q ${cx + rx + 1} ${top - 4} ${cx + rx - 1} ${cy + 2}
+          Q ${cx + rx - 6} ${cy - 10} ${cx} ${cy - 12}
+          Q ${cx - rx + 6} ${cy - 10} ${cx - rx + 1} ${cy + 2} Z`}
+          fill={c} />
+        {[-18, -6, 6, 18].map((dx, i) => (
+          <path key={i} d={`M ${cx + dx} ${cy + 2} L ${cx + dx + (dx < 0 ? -3 : 3)} ${cy + 55}`}
+            stroke={c} strokeWidth="7" strokeLinecap="round" fill="none" />
+        ))}
+        {[-18, -6, 6, 18].map((dx, i) => (
+          <circle key={`tip-${i}`} cx={cx + dx + (dx < 0 ? -3 : 3)} cy={cy + 58} r="4" fill={dark} opacity="0.3" />
+        ))}
+      </>);
     case 11: // Buzz Cut
-      return <path d="M 45 50 Q 48 26 70 24 Q 92 26 95 50 Q 84 38 70 36 Q 56 38 45 50 Z" fill={c} opacity="0.85" />;
-    default: return null;
-  }
-}
-
-function renderEyes(id: number) {
-  const eye = (iris: string, sz = 4, lids = false) => (
-    <>
-      <ellipse cx="57" cy="56" rx={sz + 2.5} ry={sz + 0.5} fill="white" />
-      <ellipse cx="83" cy="56" rx={sz + 2.5} ry={sz + 0.5} fill="white" />
-      <circle cx="57" cy="56.5" r={sz * 0.65} fill={iris} />
-      <circle cx="83" cy="56.5" r={sz * 0.65} fill={iris} />
-      <circle cx="55" cy="55" r={sz * 0.22} fill="white" />
-      <circle cx="81" cy="55" r={sz * 0.22} fill="white" />
-      {lids && <>
-        <path d="M 51 54 Q 57 49 63 54" fill="none" stroke="hsl(220 18% 25%)" strokeWidth="1.6" />
-        <path d="M 77 54 Q 83 49 89 54" fill="none" stroke="hsl(220 18% 25%)" strokeWidth="1.6" />
-      </>}
-    </>
-  );
-  switch (id) {
-    case 0: return eye('#1E1E1E');
-    case 1: return eye('#2563EB');
-    case 2: return <><path d="M 51 57 Q 57 52 63 57" fill="none" stroke="hsl(220 18% 18%)" strokeWidth="2.2" strokeLinecap="round" /><path d="M 77 57 Q 83 52 89 57" fill="none" stroke="hsl(220 18% 18%)" strokeWidth="2.2" strokeLinecap="round" /></>;
-    case 3: return eye('#1E1E1E', 3.5, true);
-    case 4: return eye('#16A34A');
-    case 5: return eye('#1E1E1E', 3);
-    case 6: return eye('#6B4428');
-    case 7: return eye('#94A3B8');
-    case 8: return eye('#D97706');
-    case 9: return <><path d="M 50 55 Q 57 48 64 55" fill="none" stroke="hsl(220 18% 18%)" strokeWidth="2" strokeLinecap="round" /><path d="M 76 55 Q 83 48 90 55" fill="none" stroke="hsl(220 18% 18%)" strokeWidth="2" strokeLinecap="round" /><circle cx="57" cy="56.5" r="1.8" fill="hsl(220 18% 18%)" /><circle cx="83" cy="56.5" r="1.8" fill="hsl(220 18% 18%)" /></>;
-    default: return eye('#1E1E1E');
-  }
-}
-
-function renderNose(id: number, shadow: string) {
-  switch (id) {
-    case 0: return <path d="M 69 59 Q 71 67 68 72 Q 70 74 74 71" fill="none" stroke={shadow} strokeWidth="1.8" strokeLinecap="round" opacity="0.65" />;
-    case 1: return <path d="M 68 58 Q 72 67 69 75 Q 72 77 77 72" fill="none" stroke={shadow} strokeWidth="2.2" strokeLinecap="round" opacity="0.7" />;
-    case 2: return <path d="M 69 59 L 70 73 Q 72 75 74 72" fill="none" stroke={shadow} strokeWidth="1.6" strokeLinecap="round" opacity="0.6" />;
-    case 3: return <path d="M 68 63 Q 70 69 69 73 Q 71 75 75 69" fill="none" stroke={shadow} strokeWidth="1.7" strokeLinecap="round" opacity="0.55" />;
-    default: return null;
-  }
-}
-
-function renderMouth(id: number) {
-  switch (id) {
-    case 0: return <path d="M 60 77 Q 70 85 80 77" fill="none" stroke="#B5655D" strokeWidth="2" strokeLinecap="round" />;
-    case 1: return <path d="M 62 78 H 78" fill="none" stroke="#A6645D" strokeWidth="2" strokeLinecap="round" />;
-    case 2: return <ellipse cx="70" cy="78" rx="6" ry="4.5" fill="#B5655D" opacity="0.5" />;
-    case 3: return <path d="M 61 77 Q 70 82 79 77" fill="none" stroke="#B5655D" strokeWidth="2" strokeLinecap="round" />;
-    case 4: return <path d="M 64 79 Q 70 81 76 79" fill="none" stroke="#A6645D" strokeWidth="1.8" strokeLinecap="round" />;
-    case 5: return <path d="M 58 77 Q 70 88 82 77" fill="none" stroke="#B5655D" strokeWidth="2" strokeLinecap="round" />;
-    case 6: return <path d="M 61 79 Q 70 75 79 79" fill="none" stroke="#8B4F4A" strokeWidth="2" strokeLinecap="round" />;
-    case 7: return <path d="M 63 78 Q 70 83 77 78" fill="none" stroke="#BD7A73" strokeWidth="1.8" strokeLinecap="round" />;
-    case 8: return <><path d="M 59 77 Q 70 85 81 77" fill="none" stroke="#704234" strokeWidth="2" strokeLinecap="round" /><path d="M 57 73 Q 63 69 70 73 Q 77 69 83 73" fill="none" stroke="#4B2E25" strokeWidth="2" strokeLinecap="round" /></>;
-    case 9: return <><path d="M 59 78 Q 70 85 81 78" fill="none" stroke="#704234" strokeWidth="2" strokeLinecap="round" /><path d="M 58 75 Q 70 83 82 75" fill="none" stroke="#3F2B22" strokeWidth="3" strokeLinecap="round" opacity="0.55" /></>;
-    default: return null;
-  }
-}
-
-function renderShirt(id: number, color: string, cx: number, sw: number, ww: number, hw: number, fem: boolean) {
-  const torso = buildTorso(cx, sw, ww, hw, fem);
-  const sleeveL = `M ${cx - sw / 2 + 2} 93 Q ${cx - sw / 2 - 14} 106 ${cx - sw / 2 - 12} 128 L ${cx - sw / 2 - 4} 130 Q ${cx - sw / 2 - 4} 114 ${cx - sw / 2 + 6} 98 Z`;
-  const sleeveR = `M ${cx + sw / 2 - 2} 93 Q ${cx + sw / 2 + 14} 106 ${cx + sw / 2 + 12} 128 L ${cx + sw / 2 + 4} 130 Q ${cx + sw / 2 + 4} 114 ${cx + sw / 2 - 6} 98 Z`;
-
-  const base = (c: string, extra?: React.ReactNode) => (
-    <>
-      <path d={torso} fill={c} />
-      <path d={sleeveL} fill={c} />
-      <path d={sleeveR} fill={c} />
-      {extra}
-    </>
-  );
-
-  switch (id) {
-    case 2: // Jaleco
-      return base('#F1F5F9', <>
-        <line x1="62" y1="96" x2="66" y2="155" stroke="#D1D5DB" strokeWidth="1.5" />
-        <line x1="74" y1="96" x2="78" y2="155" stroke="#D1D5DB" strokeWidth="1.5" />
-        <circle cx="60" cy="110" r="2" fill="#3B82F6" opacity="0.7" />
-      </>);
-    case 3: // Moletom
-      return base(color, <rect x="58" y="108" width="24" height="4" rx="2" fill="hsl(45 95% 61% / 0.7)" />);
-    case 6: // Neon
-      return base(color, <>
-        <line x1="50" y1="116" x2="90" y2="116" stroke="hsl(192 93% 56% / 0.8)" strokeWidth="3.5" />
-        <line x1="52" y1="126" x2="88" y2="126" stroke="hsl(0 0% 100% / 0.2)" strokeWidth="1.5" />
-      </>);
-    case 7: // Blazer
-      return base(color, <path d="M 63 94 L 70 108 L 77 94" fill="hsl(210 40% 96%)" opacity="0.75" />);
+      return (
+        <path d={`M ${cx - rx + 3} ${cy} Q ${cx - rx + 1} ${top + 2} ${cx} ${top - 2}
+          Q ${cx + rx - 1} ${top + 2} ${cx + rx - 3} ${cy}
+          Q ${cx + rx - 8} ${cy - 8} ${cx} ${cy - 9}
+          Q ${cx - rx + 8} ${cy - 8} ${cx - rx + 3} ${cy} Z`}
+          fill={c} opacity="0.8" />
+      );
     default:
-      return base(color);
+      return null;
   }
 }
 
-function renderPants(id: number, color: string) {
-  const waist = <path d="M 50 155 Q 70 150 90 155 L 88 172 Q 79 177 70 177 Q 61 177 52 172 Z" fill={color} />;
-  const longLegs = <>
-    <rect x="56" y="168" width="13" height="50" rx="6" fill={color} />
-    <rect x="71" y="168" width="13" height="50" rx="6" fill={color} />
-  </>;
-  const shortLegs = <>
-    <rect x="56" y="168" width="13" height="24" rx="6" fill={color} />
-    <rect x="71" y="168" width="13" height="24" rx="6" fill={color} />
-  </>;
+/* ========== EYES ========== */
+function renderEyes(id: number, cx: number, cy: number) {
+  const lx = cx - 13;
+  const rx = cx + 13;
+  const ey = cy + 4;
 
-  return <>
-    {waist}
-    {id === 3 ? shortLegs : longLegs}
-    {id === 6 && <line x1="50" y1="162" x2="90" y2="162" stroke="rgba(0,0,0,0.1)" strokeWidth="2.5" />}
-  </>;
+  const fullEye = (iris: string, sz = 4.5) => (<>
+    {/* Eye whites */}
+    <ellipse cx={lx} cy={ey} rx={sz + 3} ry={sz + 1} fill="white" />
+    <ellipse cx={rx} cy={ey} rx={sz + 3} ry={sz + 1} fill="white" />
+    {/* Iris */}
+    <circle cx={lx} cy={ey + 0.5} r={sz * 0.7} fill={iris} />
+    <circle cx={rx} cy={ey + 0.5} r={sz * 0.7} fill={iris} />
+    {/* Pupil */}
+    <circle cx={lx} cy={ey + 0.5} r={sz * 0.3} fill="#111" />
+    <circle cx={rx} cy={ey + 0.5} r={sz * 0.3} fill="#111" />
+    {/* Highlight */}
+    <circle cx={lx - 1.5} cy={ey - 1} r={sz * 0.22} fill="white" opacity="0.9" />
+    <circle cx={rx - 1.5} cy={ey - 1} r={sz * 0.22} fill="white" opacity="0.9" />
+    {/* Lower lid line */}
+    <path d={`M ${lx - sz - 1} ${ey + 2} Q ${lx} ${ey + sz + 2} ${lx + sz + 1} ${ey + 2}`}
+      fill="none" stroke="hsl(220 15% 30%)" strokeWidth="0.8" opacity="0.2" />
+    <path d={`M ${rx - sz - 1} ${ey + 2} Q ${rx} ${ey + sz + 2} ${rx + sz + 1} ${ey + 2}`}
+      fill="none" stroke="hsl(220 15% 30%)" strokeWidth="0.8" opacity="0.2" />
+  </>);
+
+  switch (id) {
+    case 0: return fullEye('#1A1A1A');        // Natural (marrom escuro)
+    case 1: return fullEye('#2563EB');        // Azul
+    case 2: // Sorridente (olhos fechados felizes)
+      return (<>
+        <path d={`M ${lx - 7} ${ey + 1} Q ${lx} ${ey - 5} ${lx + 7} ${ey + 1}`}
+          fill="none" stroke="hsl(220 18% 18%)" strokeWidth="2.5" strokeLinecap="round" />
+        <path d={`M ${rx - 7} ${ey + 1} Q ${rx} ${ey - 5} ${rx + 7} ${ey + 1}`}
+          fill="none" stroke="hsl(220 18% 18%)" strokeWidth="2.5" strokeLinecap="round" />
+      </>);
+    case 3: // Focado (olhos com pálpebra)
+      return (<>
+        {fullEye('#1A1A1A', 4)}
+        <path d={`M ${lx - 6} ${ey - 3} Q ${lx} ${ey - 7} ${lx + 6} ${ey - 3}`}
+          fill="none" stroke="hsl(220 18% 25%)" strokeWidth="2" />
+        <path d={`M ${rx - 6} ${ey - 3} Q ${rx} ${ey - 7} ${rx + 6} ${ey - 3}`}
+          fill="none" stroke="hsl(220 18% 25%)" strokeWidth="2" />
+      </>);
+    case 4: return fullEye('#16A34A');        // Verde
+    case 5: return fullEye('#1A1A1A', 3.5);   // Compacto
+    case 6: return fullEye('#6B4428');         // Castanho
+    case 7: return fullEye('#94A3B8');         // Cinza
+    case 8: return fullEye('#D97706');         // Âmbar
+    case 9: // Determinado
+      return (<>
+        {fullEye('#1A1A1A', 4)}
+        <path d={`M ${lx - 7} ${ey - 5} L ${lx + 7} ${ey - 3}`}
+          fill="none" stroke="hsl(220 18% 20%)" strokeWidth="2.2" strokeLinecap="round" />
+        <path d={`M ${rx - 7} ${ey - 3} L ${rx + 7} ${ey - 5}`}
+          fill="none" stroke="hsl(220 18% 20%)" strokeWidth="2.2" strokeLinecap="round" />
+      </>);
+    default: return fullEye('#1A1A1A');
+  }
 }
 
-function renderShoes(id: number, color: string) {
-  return <>
-    <path d="M 53 217 H 69 Q 71 222 67 226 H 50 Q 46 223 48 217 Z" fill={color} />
-    <path d="M 71 217 H 87 Q 94 222 89 226 H 73 Q 68 223 71 217 Z" fill={color} />
-    <line x1="50" y1="224" x2="67" y2="224" stroke="rgba(255,255,255,0.15)" strokeWidth="1.5" strokeLinecap="round" />
-    <line x1="73" y1="224" x2="89" y2="224" stroke="rgba(255,255,255,0.15)" strokeWidth="1.5" strokeLinecap="round" />
-  </>;
+/* ========== NOSE ========== */
+function renderNose(id: number, shadow: string, cx: number, cy: number) {
+  const ny = cy + 12;
+  switch (id) {
+    case 0: // Reta
+      return (<>
+        <path d={`M ${cx - 1} ${cy + 2} L ${cx} ${ny} Q ${cx + 2} ${ny + 4} ${cx + 5} ${ny + 1}`}
+          fill="none" stroke={shadow} strokeWidth="2" strokeLinecap="round" opacity="0.55" />
+      </>);
+    case 1: // Marcante
+      return (<>
+        <path d={`M ${cx - 1} ${cy} Q ${cx + 3} ${ny - 2} ${cx + 1} ${ny + 2} Q ${cx + 3} ${ny + 5} ${cx + 8} ${ny}`}
+          fill="none" stroke={shadow} strokeWidth="2.4" strokeLinecap="round" opacity="0.6" />
+      </>);
+    case 2: // Fina
+      return (
+        <path d={`M ${cx} ${cy + 4} L ${cx + 1} ${ny + 2} Q ${cx + 2} ${ny + 4} ${cx + 5} ${ny + 1}`}
+          fill="none" stroke={shadow} strokeWidth="1.6" strokeLinecap="round" opacity="0.5" />
+      );
+    case 3: // Leve
+      return (
+        <path d={`M ${cx - 2} ${ny - 2} Q ${cx + 1} ${ny + 3} ${cx + 5} ${ny - 1}`}
+          fill="none" stroke={shadow} strokeWidth="1.8" strokeLinecap="round" opacity="0.45" />
+      );
+    default: return null;
+  }
 }
 
-function renderAccessory(id: number) {
+/* ========== MOUTH ========== */
+function renderMouth(id: number, cx: number, cy: number) {
+  const my = cy + 22;
+  const lipColor = '#B5655D';
+  const lipDark = '#8B4F4A';
+  switch (id) {
+    case 0: // Sorriso
+      return <path d={`M ${cx - 10} ${my} Q ${cx} ${my + 10} ${cx + 10} ${my}`}
+        fill="none" stroke={lipColor} strokeWidth="2.2" strokeLinecap="round" />;
+    case 1: // Sério
+      return <path d={`M ${cx - 8} ${my + 2} H ${cx + 8}`}
+        fill="none" stroke={lipColor} strokeWidth="2.2" strokeLinecap="round" />;
+    case 2: // Aberto
+      return (<>
+        <ellipse cx={cx} cy={my + 2} rx="7" ry="5" fill={lipDark} opacity="0.4" />
+        <ellipse cx={cx} cy={my + 2} rx="5" ry="3" fill="#2D1515" opacity="0.3" />
+      </>);
+    case 3: // Confiante
+      return <path d={`M ${cx - 9} ${my} Q ${cx} ${my + 6} ${cx + 9} ${my}`}
+        fill="none" stroke={lipColor} strokeWidth="2" strokeLinecap="round" />;
+    case 4: // Sutil
+      return <path d={`M ${cx - 6} ${my + 2} Q ${cx} ${my + 5} ${cx + 6} ${my + 2}`}
+        fill="none" stroke={lipColor} strokeWidth="1.8" strokeLinecap="round" />;
+    case 5: // Largo
+      return <path d={`M ${cx - 14} ${my} Q ${cx} ${my + 12} ${cx + 14} ${my}`}
+        fill="none" stroke={lipColor} strokeWidth="2.2" strokeLinecap="round" />;
+    case 6: // Determinado
+      return <path d={`M ${cx - 8} ${my + 3} Q ${cx} ${my - 1} ${cx + 8} ${my + 3}`}
+        fill="none" stroke={lipDark} strokeWidth="2.2" strokeLinecap="round" />;
+    case 7: // Calmo
+      return <path d={`M ${cx - 7} ${my + 1} Q ${cx} ${my + 5} ${cx + 7} ${my + 1}`}
+        fill="none" stroke="#BD7A73" strokeWidth="2" strokeLinecap="round" />;
+    case 8: // Bigode
+      return (<>
+        <path d={`M ${cx - 9} ${my + 1} Q ${cx} ${my + 8} ${cx + 9} ${my + 1}`}
+          fill="none" stroke={lipDark} strokeWidth="2" strokeLinecap="round" />
+        <path d={`M ${cx - 12} ${my - 5} Q ${cx - 6} ${my - 8} ${cx} ${my - 5} Q ${cx + 6} ${my - 8} ${cx + 12} ${my - 5}`}
+          fill="none" stroke="#3B2B22" strokeWidth="2.5" strokeLinecap="round" opacity="0.7" />
+      </>);
+    case 9: // Barba curta
+      return (<>
+        <path d={`M ${cx - 9} ${my + 1} Q ${cx} ${my + 8} ${cx + 9} ${my + 1}`}
+          fill="none" stroke={lipDark} strokeWidth="2" strokeLinecap="round" />
+        <path d={`M ${cx - 16} ${my} Q ${cx - 16} ${my + 16} ${cx} ${my + 20}
+          Q ${cx + 16} ${my + 16} ${cx + 16} ${my}`}
+          fill="none" stroke="#3B2B22" strokeWidth="3.5" strokeLinecap="round" opacity="0.4" />
+      </>);
+    default: return null;
+  }
+}
+
+/* ========== SHIRT ========== */
+function renderShirt(
+  id: number, sf: { main: string; detail: string },
+  cx: number, sy: number, sw: number, wy: number, ww: number, hy: number, hw: number,
+  _fem: boolean, uid: string,
+) {
+  const torso = `M ${cx - sw / 2} ${sy}
+    Q ${cx} ${sy - 6} ${cx + sw / 2} ${sy}
+    L ${cx + ww / 2} ${wy}
+    L ${cx + hw / 2} ${hy}
+    Q ${cx} ${hy + 5} ${cx - hw / 2} ${hy}
+    L ${cx - ww / 2} ${wy} Z`;
+
+  const details: Record<number, React.ReactNode> = {
+    2: (<> {/* Jaleco - lab coat lines */}
+      <line x1={cx - 4} y1={sy + 8} x2={cx - 2} y2={hy - 4} stroke="#CBD5E1" strokeWidth="1.5" />
+      <line x1={cx + 4} y1={sy + 8} x2={cx + 2} y2={hy - 4} stroke="#CBD5E1" strokeWidth="1.5" />
+      <circle cx={cx - 8} cy={sy + 20} r="2.5" fill="#3B82F6" opacity="0.6" />
+    </>),
+    3: (<> {/* Moletom - kangaroo pocket */}
+      <rect x={cx - 14} y={wy - 12} width="28" height="8" rx="4" fill="hsl(45 95% 55% / 0.5)" />
+    </>),
+    6: (<> {/* Neon stripes */}
+      <line x1={cx - sw / 2 + 6} y1={wy - 10} x2={cx + sw / 2 - 6} y2={wy - 10}
+        stroke="hsl(160 80% 60% / 0.7)" strokeWidth="3" strokeLinecap="round" />
+      <line x1={cx - sw / 2 + 8} y1={wy + 2} x2={cx + sw / 2 - 8} y2={wy + 2}
+        stroke="hsl(160 80% 80% / 0.3)" strokeWidth="1.5" strokeLinecap="round" />
+    </>),
+    7: (<> {/* Blazer lapels */}
+      <path d={`M ${cx - 4} ${sy + 4} L ${cx} ${sy + 22} L ${cx + 4} ${sy + 4}`}
+        fill="hsl(210 40% 90%)" opacity="0.6" />
+    </>),
+  };
+
+  return (<>
+    <path d={torso} fill={`url(#${uid}-shirtG)`} />
+    {/* Collar / neckline */}
+    <path d={`M ${cx - 10} ${sy + 2} Q ${cx} ${sy + 10} ${cx + 10} ${sy + 2}`}
+      fill="none" stroke={sf.detail} strokeWidth="1.5" opacity="0.4" />
+    {details[id]}
+  </>);
+}
+
+/* ========== SLEEVES ========== */
+function renderSleeves(id: number, sf: { main: string; detail: string }, lx: number, rx: number, w: number, top: number, _uid: string) {
+  const sleeveH = id === 2 ? 60 : 35; // lab coat has longer sleeves
+  return (<>
+    <rect x={lx} y={top} width={w} height={sleeveH} rx={w / 2} fill={sf.main}
+      transform={`rotate(8 ${lx + w / 2} ${top})`} />
+    <rect x={rx} y={top} width={w} height={sleeveH} rx={w / 2} fill={sf.main}
+      transform={`rotate(-8 ${rx + w / 2} ${top})`} />
+  </>);
+}
+
+/* ========== PANTS ========== */
+function renderPants(
+  id: number, pf: { main: string; detail: string },
+  cx: number, hy: number, hw: number,
+  llx: number, rlx: number, lw: number, lb: number,
+  uid: string,
+) {
+  const isShort = id === 3; // Areia = shorts
+  const legH = isShort ? 35 : lb - hy + 6;
+
+  return (<>
+    {/* Waistband */}
+    <path d={`M ${cx - hw / 2 - 2} ${hy - 2} Q ${cx} ${hy - 6} ${cx + hw / 2 + 2} ${hy - 2}
+      L ${cx + hw / 2 + 2} ${hy + 6} Q ${cx} ${hy + 2} ${cx - hw / 2 - 2} ${hy + 6} Z`}
+      fill={pf.detail} />
+    {/* Left pant leg */}
+    <rect x={llx - 1} y={hy + 2} width={lw + 2} height={legH} rx={lw / 2}
+      fill={`url(#${uid}-pantsG)`} />
+    {/* Right pant leg */}
+    <rect x={rlx - 1} y={hy + 2} width={lw + 2} height={legH} rx={lw / 2}
+      fill={`url(#${uid}-pantsG)`} />
+    {/* Center seam */}
+    <line x1={cx} y1={hy + 4} x2={cx} y2={hy + legH * 0.6}
+      stroke={pf.detail} strokeWidth="1.2" opacity="0.25" />
+  </>);
+}
+
+/* ========== SHOES ========== */
+function renderShoes(id: number, sf: { main: string; sole: string; accent: string }, llx: number, rlx: number, lw: number, lb: number) {
+  const y = lb - 4;
+  const w = lw + 6;
+  const isBoot = id === 2 || id === 6;
+  const bootH = isBoot ? 18 : 0;
+
+  return (<>
+    {/* Boot shaft */}
+    {isBoot && <>
+      <rect x={llx - 2} y={y - bootH} width={lw + 4} height={bootH + 4} rx={4} fill={sf.main} />
+      <rect x={rlx - 2} y={y - bootH} width={lw + 4} height={bootH + 4} rx={4} fill={sf.main} />
+    </>}
+    {/* Left shoe */}
+    <path d={`M ${llx - 2} ${y} H ${llx + w} Q ${llx + w + 4} ${y + 5} ${llx + w - 2} ${y + 10}
+      H ${llx - 4} Q ${llx - 8} ${y + 6} ${llx - 2} ${y} Z`}
+      fill={sf.main} />
+    {/* Right shoe */}
+    <path d={`M ${rlx - 2} ${y} H ${rlx + w} Q ${rlx + w + 4} ${y + 5} ${rlx + w - 2} ${y + 10}
+      H ${rlx - 4} Q ${rlx - 8} ${y + 6} ${rlx - 2} ${y} Z`}
+      fill={sf.main} />
+    {/* Soles */}
+    <rect x={llx - 4} y={y + 8} width={w + 4} height="4" rx="2" fill={sf.sole} />
+    <rect x={rlx - 4} y={y + 8} width={w + 4} height="4" rx="2" fill={sf.sole} />
+    {/* Accent lines */}
+    <line x1={llx} y1={y + 4} x2={llx + w - 2} y2={y + 4}
+      stroke={sf.accent} strokeWidth="1.5" strokeLinecap="round" opacity="0.5" />
+    <line x1={rlx} y1={y + 4} x2={rlx + w - 2} y2={y + 4}
+      stroke={sf.accent} strokeWidth="1.5" strokeLinecap="round" opacity="0.5" />
+  </>);
+}
+
+/* ========== ACCESSORY ========== */
+function renderAccessory(id: number, cx: number, headCy: number, shoulderY: number) {
   switch (id) {
     case 1: // Cordão
-      return <><path d="M 64 90 L 61 114" stroke="#D4AF37" strokeWidth="1.8" /><path d="M 76 90 L 79 114" stroke="#D4AF37" strokeWidth="1.8" /><circle cx="70" cy="116" r="5" fill="#D4AF37" /><circle cx="70" cy="116" r="2.5" fill="#FDE68A" /></>;
+      return (<>
+        <path d={`M ${cx - 8} ${shoulderY + 2} Q ${cx} ${shoulderY + 24} ${cx + 8} ${shoulderY + 2}`}
+          fill="none" stroke="#D4AF37" strokeWidth="2" />
+        <circle cx={cx} cy={shoulderY + 22} r="5" fill="#D4AF37" />
+        <circle cx={cx} cy={shoulderY + 22} r="2.5" fill="#FDE68A" />
+      </>);
     case 2: // Crachá
-      return <><path d="M 64 90 L 59 124" stroke="#38BDF8" strokeWidth="1.5" /><path d="M 76 90 L 81 124" stroke="#38BDF8" strokeWidth="1.5" /><rect x="62" y="123" width="16" height="20" rx="3" fill="#E2E8F0" /><rect x="65" y="128" width="10" height="3" rx="1.5" fill="#94A3B8" /><rect x="66" y="133" width="8" height="2" rx="1" fill="#CBD5E1" /></>;
+      return (<>
+        <path d={`M ${cx - 6} ${shoulderY + 2} L ${cx - 10} ${shoulderY + 32}`} stroke="#38BDF8" strokeWidth="1.8" />
+        <path d={`M ${cx + 6} ${shoulderY + 2} L ${cx + 10} ${shoulderY + 32}`} stroke="#38BDF8" strokeWidth="1.8" />
+        <rect x={cx - 10} y={shoulderY + 30} width="20" height="26" rx="3" fill="#E2E8F0" />
+        <rect x={cx - 6} y={shoulderY + 36} width="12" height="3" rx="1.5" fill="#94A3B8" />
+        <rect x={cx - 5} y={shoulderY + 42} width="10" height="2" rx="1" fill="#CBD5E1" />
+      </>);
     case 3: // Óculos Aviador
-      return <><line x1="50" y1="57" x2="90" y2="57" stroke="#78716C" strokeWidth="1.8" /><ellipse cx="58" cy="57" rx="10" ry="8" fill="rgba(255,255,255,0.04)" stroke="#F59E0B" strokeWidth="1.6" /><ellipse cx="82" cy="57" rx="10" ry="8" fill="rgba(255,255,255,0.04)" stroke="#F59E0B" strokeWidth="1.6" /></>;
+      return (<>
+        <line x1={cx - 24} y1={headCy + 5} x2={cx + 24} y2={headCy + 5} stroke="#78716C" strokeWidth="2" />
+        <ellipse cx={cx - 12} cy={headCy + 5} rx="12" ry="9" fill="hsl(40 60% 50% / 0.06)" stroke="#F59E0B" strokeWidth="1.8" />
+        <ellipse cx={cx + 12} cy={headCy + 5} rx="12" ry="9" fill="hsl(40 60% 50% / 0.06)" stroke="#F59E0B" strokeWidth="1.8" />
+      </>);
     case 4: // Óculos Redondo
-      return <><line x1="50" y1="57" x2="90" y2="57" stroke="#94A3B8" strokeWidth="1.8" /><circle cx="58" cy="57" r="8.5" fill="none" stroke="#CBD5E1" strokeWidth="1.6" /><circle cx="82" cy="57" r="8.5" fill="none" stroke="#CBD5E1" strokeWidth="1.6" /></>;
+      return (<>
+        <line x1={cx - 22} y1={headCy + 5} x2={cx + 22} y2={headCy + 5} stroke="#94A3B8" strokeWidth="2" />
+        <circle cx={cx - 12} cy={headCy + 5} r="10" fill="none" stroke="#CBD5E1" strokeWidth="1.8" />
+        <circle cx={cx + 12} cy={headCy + 5} r="10" fill="none" stroke="#CBD5E1" strokeWidth="1.8" />
+      </>);
     case 5: // Visor Tech
-      return <><line x1="47" y1="53" x2="93" y2="53" stroke="#22D3EE" strokeWidth="3.5" strokeLinecap="round" /><rect x="47" y="54" width="46" height="10" rx="5" fill="hsl(192 93% 56% / 0.12)" stroke="#22D3EE" strokeWidth="1.4" /></>;
+      return (<>
+        <rect x={cx - 26} y={headCy + 1} width="52" height="12" rx="6" fill="hsl(192 93% 56% / 0.1)" stroke="#22D3EE" strokeWidth="1.8" />
+        <line x1={cx - 26} y1={headCy + 3} x2={cx + 26} y2={headCy + 3} stroke="#22D3EE" strokeWidth="3" strokeLinecap="round" opacity="0.6" />
+      </>);
     default: return null;
   }
 }
