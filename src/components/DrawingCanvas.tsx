@@ -10,7 +10,7 @@ interface DrawingCanvasProps {
   initialData?: string;
 }
 
-export default function DrawingCanvas({ width = 320, height = 400, onSave, initialData }: DrawingCanvasProps) {
+export default function DrawingCanvas({ width = 400, height = 480, onSave, initialData }: DrawingCanvasProps) {
   const engine = useDrawingEngine({ width, height, onSave, initialData });
   const textRef = useRef<HTMLInputElement>(null);
 
@@ -30,8 +30,12 @@ export default function DrawingCanvas({ width = 320, height = 400, onSave, initi
   return (
     <div className="flex flex-col items-center gap-3">
       {/* Canvas area */}
-      <div className="relative rounded-2xl overflow-hidden border-2 border-primary/30 shadow-2xl shadow-primary/10"
+      <div className="relative rounded-2xl overflow-hidden shadow-2xl shadow-primary/10 ring-1 ring-border/30"
         style={{ width: '100%', maxWidth: width }}>
+        
+        {/* Canvas background glow */}
+        <div className="absolute -inset-1 bg-gradient-to-b from-primary/5 via-transparent to-primary/5 rounded-2xl -z-10 blur-sm" />
+        
         <canvas
           ref={engine.canvasRef}
           width={width}
@@ -77,27 +81,16 @@ export default function DrawingCanvas({ width = 320, height = 400, onSave, initi
                 }}
                 onBlur={() => engine.commitText(engine.textInput)}
                 placeholder="Digite aqui..."
-                className="bg-background/90 border border-primary/50 rounded-lg px-2 py-1 text-sm text-foreground outline-none min-w-[120px] backdrop-blur-sm"
+                className="bg-card/95 border border-primary/50 rounded-lg px-3 py-1.5 text-sm text-foreground outline-none min-w-[140px] backdrop-blur-sm shadow-lg"
                 style={{ color: engine.color }}
               />
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* Atom decoration */}
-        <div className="absolute top-3 right-3 pointer-events-none opacity-20">
-          <svg width="36" height="36" viewBox="0 0 40 40">
-            <circle cx="20" cy="20" r="3" fill="hsl(var(--primary))" />
-            <ellipse cx="20" cy="20" rx="17" ry="6" fill="none" stroke="hsl(var(--primary))" strokeWidth="0.7">
-              <animateTransform attributeName="transform" type="rotate" values="0 20 20;360 20 20" dur="8s" repeatCount="indefinite" />
-            </ellipse>
-            <ellipse cx="20" cy="20" rx="17" ry="6" fill="none" stroke="hsl(var(--primary))" strokeWidth="0.7">
-              <animateTransform attributeName="transform" type="rotate" values="60 20 20;420 20 20" dur="6s" repeatCount="indefinite" />
-            </ellipse>
-            <ellipse cx="20" cy="20" rx="17" ry="6" fill="none" stroke="hsl(var(--primary))" strokeWidth="0.7">
-              <animateTransform attributeName="transform" type="rotate" values="120 20 20;480 20 20" dur="10s" repeatCount="indefinite" />
-            </ellipse>
-          </svg>
+        {/* Corner label */}
+        <div className="absolute bottom-2 right-2 pointer-events-none">
+          <span className="text-[0.55rem] text-foreground/15 font-display tracking-wider">UNIVERSOS ATÔMICOS</span>
         </div>
       </div>
 
