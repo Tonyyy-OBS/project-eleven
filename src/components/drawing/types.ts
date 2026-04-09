@@ -6,13 +6,16 @@ export interface DrawAction {
 }
 
 export const COLORS = [
-  '#1a1a2e', '#16213e', '#0f3460', '#533483',
-  '#e94560', '#f39c12', '#2ecc71', '#3498db',
-  '#9b59b6', '#1abc9c', '#e74c3c', '#f1c40f',
-  '#ecf0f1', '#ffffff', '#95a5a6', '#34495e',
-  '#d35400', '#c0392b', '#7f8c8d', '#2c3e50',
-  '#F6D9BE', '#E7BD97', '#CF9D78', '#AF7D5C',
-  '#8D6248', '#694431', '#41261A', '#23180E',
+  // Row 1 — Essentials
+  '#000000', '#FFFFFF', '#F5F5F5', '#BDBDBD', '#757575', '#424242',
+  // Row 2 — Warm
+  '#E53935', '#FF7043', '#FFA726', '#FFCA28', '#FFD54F', '#FFF176',
+  // Row 3 — Cool
+  '#42A5F5', '#29B6F6', '#26C6DA', '#26A69A', '#66BB6A', '#9CCC65',
+  // Row 4 — Rich
+  '#7E57C2', '#AB47BC', '#EC407A', '#EF5350', '#8D6E63', '#78909C',
+  // Row 5 — Skin tones
+  '#FDDCB5', '#E8B88A', '#D4956B', '#B47550', '#8D5638', '#5D3A1A',
 ];
 
-export const BRUSH_SIZES = [2, 4, 8, 14, 22, 32];
+export const BRUSH_SIZES = [1, 3, 6, 12, 20, 32];
