@@ -1,6 +1,7 @@
-import { useRef, useState, useEffect, useCallback } from 'react';
-import { motion } from 'framer-motion';
-import { Paintbrush, Eraser, Trash2, Undo2, Download, Palette } from 'lucide-react';
+import { useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import Toolbar from './drawing/Toolbar';
+import { useDrawingEngine } from './drawing/useDrawingEngine';
 
 interface DrawingCanvasProps {
   width?: number;
@@ -9,230 +10,91 @@ interface DrawingCanvasProps {
   initialData?: string;
 }
 
-const COLORS = [
-  '#1a1a2e', '#16213e', '#0f3460', '#533483',
-  '#e94560', '#f39c12', '#2ecc71', '#3498db',
-  '#9b59b6', '#1abc9c', '#e74c3c', '#f1c40f',
-  '#ecf0f1', '#ffffff', '#95a5a6', '#34495e',
-  '#d35400', '#c0392b', '#7f8c8d', '#2c3e50',
-  '#F6D9BE', '#E7BD97', '#CF9D78', '#AF7D5C',
-  '#8D6248', '#694431', '#41261A', '#23180E',
-];
-
-const BRUSH_SIZES = [2, 4, 8, 14, 22, 32];
-
 export default function DrawingCanvas({ width = 320, height = 400, onSave, initialData }: DrawingCanvasProps) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [isDrawing, setIsDrawing] = useState(false);
-  const [color, setColor] = useState('#ecf0f1');
-  const [brushSize, setBrushSize] = useState(4);
-  const [tool, setTool] = useState<'brush' | 'eraser'>('brush');
-  const [history, setHistory] = useState<ImageData[]>([]);
-  const [showPalette, setShowPalette] = useState(false);
-  const lastPos = useRef<{ x: number; y: number } | null>(null);
+  const engine = useDrawingEngine({ width, height, onSave, initialData });
+  const textRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-    
-    if (initialData) {
-      const img = new Image();
-      img.onload = () => {
-        ctx.drawImage(img, 0, 0);
-        saveState();
-      };
-      img.src = initialData;
-    } else {
-      // Draw guide silhouette
-      ctx.fillStyle = '#1a1a2e';
-      ctx.fillRect(0, 0, width, height);
-      drawGuide(ctx);
-      saveState();
-    }
-  }, []);
+    if (engine.textPos && textRef.current) textRef.current.focus();
+  }, [engine.textPos]);
 
-  const drawGuide = (ctx: CanvasRenderingContext2D) => {
-    ctx.strokeStyle = 'rgba(100,200,255,0.15)';
-    ctx.lineWidth = 1;
-    ctx.setLineDash([4, 4]);
-    
-    const cx = width / 2;
-    // Head circle
-    ctx.beginPath();
-    ctx.arc(cx, 90, 35, 0, Math.PI * 2);
-    ctx.stroke();
-    // Body
-    ctx.beginPath();
-    ctx.moveTo(cx, 125);
-    ctx.lineTo(cx, 250);
-    ctx.stroke();
-    // Arms
-    ctx.beginPath();
-    ctx.moveTo(cx - 50, 170);
-    ctx.lineTo(cx + 50, 170);
-    ctx.stroke();
-    // Legs
-    ctx.beginPath();
-    ctx.moveTo(cx, 250);
-    ctx.lineTo(cx - 35, 340);
-    ctx.moveTo(cx, 250);
-    ctx.lineTo(cx + 35, 340);
-    ctx.stroke();
-    
-    ctx.setLineDash([]);
-    
-    // Label
-    ctx.fillStyle = 'rgba(100,200,255,0.25)';
-    ctx.font = '11px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('Desenhe seu personagem!', cx, height - 15);
-  };
-
-  const saveState = () => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-    const data = ctx.getImageData(0, 0, width, height);
-    setHistory(prev => [...prev.slice(-20), data]);
-  };
-
-  const getPos = (e: React.MouseEvent | React.TouchEvent) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return { x: 0, y: 0 };
-    const rect = canvas.getBoundingClientRect();
-    const scaleX = width / rect.width;
-    const scaleY = height / rect.height;
-    
-    if ('touches' in e) {
-      const touch = e.touches[0] || e.changedTouches[0];
-      return { x: (touch.clientX - rect.left) * scaleX, y: (touch.clientY - rect.top) * scaleY };
-    }
-    return { x: (e.clientX - rect.left) * scaleX, y: (e.clientY - rect.top) * scaleY };
-  };
-
-  const startDraw = (e: React.MouseEvent | React.TouchEvent) => {
-    e.preventDefault();
-    setIsDrawing(true);
-    const pos = getPos(e);
-    lastPos.current = pos;
-    draw(pos);
-  };
-
-  const draw = (pos: { x: number; y: number }) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    
-    if (tool === 'eraser') {
-      ctx.globalCompositeOperation = 'destination-out';
-      ctx.strokeStyle = 'rgba(0,0,0,1)';
-    } else {
-      ctx.globalCompositeOperation = 'source-over';
-      ctx.strokeStyle = color;
-    }
-    ctx.lineWidth = brushSize;
-
-    if (lastPos.current) {
-      ctx.beginPath();
-      ctx.moveTo(lastPos.current.x, lastPos.current.y);
-      ctx.lineTo(pos.x, pos.y);
-      ctx.stroke();
-    } else {
-      ctx.beginPath();
-      ctx.arc(pos.x, pos.y, brushSize / 2, 0, Math.PI * 2);
-      ctx.fill();
-    }
-    lastPos.current = pos;
-  };
-
-  const onMove = (e: React.MouseEvent | React.TouchEvent) => {
-    e.preventDefault();
-    if (!isDrawing) return;
-    draw(getPos(e));
-  };
-
-  const endDraw = () => {
-    if (isDrawing) {
-      setIsDrawing(false);
-      lastPos.current = null;
-      saveState();
+  const cursorStyle = (): string => {
+    switch (engine.tool) {
+      case 'eyedropper': return 'crosshair';
+      case 'fill': return 'cell';
+      case 'text': return 'text';
+      default: return 'crosshair';
     }
   };
-
-  const undo = () => {
-    if (history.length < 2) return;
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-    const newHistory = [...history];
-    newHistory.pop();
-    const prev = newHistory[newHistory.length - 1];
-    ctx.putImageData(prev, 0, 0);
-    setHistory(newHistory);
-  };
-
-  const clear = () => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-    ctx.fillStyle = '#1a1a2e';
-    ctx.fillRect(0, 0, width, height);
-    drawGuide(ctx);
-    saveState();
-  };
-
-  const getDataUrl = useCallback(() => {
-    return canvasRef.current?.toDataURL('image/png') || '';
-  }, []);
-
-  // Expose save
-  useEffect(() => {
-    if (onSave) {
-      (window as any).__drawingCanvasSave = () => onSave(getDataUrl());
-    }
-    return () => { delete (window as any).__drawingCanvasSave; };
-  }, [onSave, getDataUrl]);
 
   return (
     <div className="flex flex-col items-center gap-3">
-      {/* Canvas */}
+      {/* Canvas area */}
       <div className="relative rounded-2xl overflow-hidden border-2 border-primary/30 shadow-2xl shadow-primary/10"
         style={{ width: '100%', maxWidth: width }}>
         <canvas
-          ref={canvasRef}
+          ref={engine.canvasRef}
           width={width}
           height={height}
-          className="w-full cursor-crosshair touch-none"
-          style={{ aspectRatio: `${width}/${height}` }}
-          onMouseDown={startDraw}
-          onMouseMove={onMove}
-          onMouseUp={endDraw}
-          onMouseLeave={endDraw}
-          onTouchStart={startDraw}
-          onTouchMove={onMove}
-          onTouchEnd={endDraw}
+          className="w-full touch-none"
+          style={{ aspectRatio: `${width}/${height}`, cursor: cursorStyle() }}
+          onMouseDown={engine.startDraw}
+          onMouseMove={engine.onMove}
+          onMouseUp={engine.endDraw}
+          onMouseLeave={engine.endDraw}
+          onTouchStart={engine.startDraw}
+          onTouchMove={engine.onMove}
+          onTouchEnd={engine.endDraw}
         />
-        
-        {/* Atom decoration in corner */}
-        <div className="absolute top-3 right-3 pointer-events-none opacity-30">
-          <svg width="40" height="40" viewBox="0 0 40 40">
-            <circle cx="20" cy="20" r="4" fill="hsl(var(--primary))" />
-            <ellipse cx="20" cy="20" rx="18" ry="7" fill="none" stroke="hsl(var(--primary))" strokeWidth="0.8">
+        {/* Shape preview overlay */}
+        <canvas
+          ref={engine.overlayRef}
+          width={width}
+          height={height}
+          className="absolute inset-0 w-full h-full pointer-events-none"
+          style={{ aspectRatio: `${width}/${height}` }}
+        />
+
+        {/* Text input overlay */}
+        <AnimatePresence>
+          {engine.textPos && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="absolute z-20"
+              style={{
+                left: `${(engine.textPos.x / width) * 100}%`,
+                top: `${(engine.textPos.y / height) * 100}%`,
+              }}>
+              <input
+                ref={textRef}
+                value={engine.textInput}
+                onChange={e => engine.setTextInput(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') engine.commitText(engine.textInput);
+                  if (e.key === 'Escape') engine.commitText('');
+                }}
+                onBlur={() => engine.commitText(engine.textInput)}
+                placeholder="Digite aqui..."
+                className="bg-background/90 border border-primary/50 rounded-lg px-2 py-1 text-sm text-foreground outline-none min-w-[120px] backdrop-blur-sm"
+                style={{ color: engine.color }}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Atom decoration */}
+        <div className="absolute top-3 right-3 pointer-events-none opacity-20">
+          <svg width="36" height="36" viewBox="0 0 40 40">
+            <circle cx="20" cy="20" r="3" fill="hsl(var(--primary))" />
+            <ellipse cx="20" cy="20" rx="17" ry="6" fill="none" stroke="hsl(var(--primary))" strokeWidth="0.7">
               <animateTransform attributeName="transform" type="rotate" values="0 20 20;360 20 20" dur="8s" repeatCount="indefinite" />
             </ellipse>
-            <ellipse cx="20" cy="20" rx="18" ry="7" fill="none" stroke="hsl(var(--primary))" strokeWidth="0.8">
+            <ellipse cx="20" cy="20" rx="17" ry="6" fill="none" stroke="hsl(var(--primary))" strokeWidth="0.7">
               <animateTransform attributeName="transform" type="rotate" values="60 20 20;420 20 20" dur="6s" repeatCount="indefinite" />
             </ellipse>
-            <ellipse cx="20" cy="20" rx="18" ry="7" fill="none" stroke="hsl(var(--primary))" strokeWidth="0.8">
+            <ellipse cx="20" cy="20" rx="17" ry="6" fill="none" stroke="hsl(var(--primary))" strokeWidth="0.7">
               <animateTransform attributeName="transform" type="rotate" values="120 20 20;480 20 20" dur="10s" repeatCount="indefinite" />
             </ellipse>
           </svg>
@@ -240,57 +102,23 @@ export default function DrawingCanvas({ width = 320, height = 400, onSave, initi
       </div>
 
       {/* Toolbar */}
-      <div className="flex items-center gap-2 flex-wrap justify-center">
-        {/* Tool buttons */}
-        <div className="flex gap-1 bg-secondary/40 rounded-xl p-1 border border-border/30">
-          <button onClick={() => setTool('brush')}
-            className={`p-2 rounded-lg transition-all ${tool === 'brush' ? 'bg-primary text-primary-foreground shadow-md' : 'text-muted-foreground hover:text-foreground hover:bg-secondary/60'}`}>
-            <Paintbrush size={16} />
-          </button>
-          <button onClick={() => setTool('eraser')}
-            className={`p-2 rounded-lg transition-all ${tool === 'eraser' ? 'bg-primary text-primary-foreground shadow-md' : 'text-muted-foreground hover:text-foreground hover:bg-secondary/60'}`}>
-            <Eraser size={16} />
-          </button>
-          <button onClick={undo} className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-all">
-            <Undo2 size={16} />
-          </button>
-          <button onClick={clear} className="p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-secondary/60 transition-all">
-            <Trash2 size={16} />
-          </button>
-        </div>
-
-        {/* Brush sizes */}
-        <div className="flex items-center gap-1.5 bg-secondary/40 rounded-xl p-1.5 border border-border/30">
-          {BRUSH_SIZES.map(size => (
-            <button key={size} onClick={() => setBrushSize(size)}
-              className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
-                brushSize === size ? 'bg-primary/20 border border-primary/50' : 'hover:bg-secondary/60'}`}>
-              <div className="rounded-full bg-foreground" style={{ width: Math.min(size, 20), height: Math.min(size, 20) }} />
-            </button>
-          ))}
-        </div>
-
-        {/* Color picker toggle */}
-        <button onClick={() => setShowPalette(!showPalette)}
-          className="p-2 rounded-xl border border-border/30 bg-secondary/40 hover:bg-secondary/60 transition-all flex items-center gap-1.5">
-          <div className="w-5 h-5 rounded-full border-2 border-border/50" style={{ background: color }} />
-          <Palette size={14} className="text-muted-foreground" />
-        </button>
-      </div>
-
-      {/* Color palette */}
-      {showPalette && (
-        <motion.div className="grid grid-cols-7 gap-1.5 p-3 bg-secondary/40 rounded-xl border border-border/30"
-          initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}>
-          {COLORS.map(c => (
-            <button key={c} onClick={() => { setColor(c); setTool('brush'); }}
-              className={`w-8 h-8 rounded-lg border-2 transition-all hover:scale-110 ${
-                color === c ? 'border-primary scale-110 shadow-lg' : 'border-transparent'}`}
-              style={{ background: c }}
-            />
-          ))}
-        </motion.div>
-      )}
+      <Toolbar
+        tool={engine.tool}
+        setTool={engine.setTool}
+        color={engine.color}
+        setColor={engine.setColor}
+        brushSize={engine.brushSize}
+        setBrushSize={engine.setBrushSize}
+        fillShape={engine.fillShape}
+        setFillShape={engine.setFillShape}
+        onUndo={engine.undo}
+        onRedo={engine.redo}
+        onClear={engine.clear}
+        onImport={engine.importImage}
+        onExport={engine.exportImage}
+        canUndo={engine.canUndo}
+        canRedo={engine.canRedo}
+      />
     </div>
   );
 }
