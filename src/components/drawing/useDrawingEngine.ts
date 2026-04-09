@@ -395,17 +395,48 @@ export function useDrawingEngine({ width, height, onSave, initialData }: UseDraw
 }
 
 function drawGuide(ctx: CanvasRenderingContext2D, w: number, h: number) {
-  ctx.strokeStyle = 'rgba(100,200,255,0.12)';
-  ctx.lineWidth = 1;
-  ctx.setLineDash([4, 4]);
   const cx = w / 2;
-  ctx.beginPath(); ctx.arc(cx, 90, 35, 0, Math.PI * 2); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(cx, 125); ctx.lineTo(cx, 250); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(cx - 50, 170); ctx.lineTo(cx + 50, 170); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(cx, 250); ctx.lineTo(cx - 35, 340); ctx.moveTo(cx, 250); ctx.lineTo(cx + 35, 340); ctx.stroke();
+  const scale = w / 320;
+
+  // Subtle grid
+  ctx.strokeStyle = 'rgba(100,200,255,0.04)';
+  ctx.lineWidth = 1;
+  const step = 40 * scale;
+  for (let x = step; x < w; x += step) {
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
+  }
+  for (let y = step; y < h; y += step) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+  }
+
+  // Body silhouette guide
+  ctx.strokeStyle = 'rgba(100,200,255,0.08)';
+  ctx.lineWidth = 1.5 * scale;
+  ctx.setLineDash([6 * scale, 4 * scale]);
+
+  // Head
+  ctx.beginPath(); ctx.arc(cx, 100 * scale, 40 * scale, 0, Math.PI * 2); ctx.stroke();
+  // Neck
+  ctx.beginPath(); ctx.moveTo(cx, 140 * scale); ctx.lineTo(cx, 160 * scale); ctx.stroke();
+  // Body
+  ctx.beginPath();
+  ctx.moveTo(cx - 55 * scale, 160 * scale);
+  ctx.lineTo(cx + 55 * scale, 160 * scale);
+  ctx.lineTo(cx + 45 * scale, 290 * scale);
+  ctx.lineTo(cx - 45 * scale, 290 * scale);
+  ctx.closePath(); ctx.stroke();
+  // Arms
+  ctx.beginPath(); ctx.moveTo(cx - 55 * scale, 170 * scale); ctx.lineTo(cx - 80 * scale, 250 * scale); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx + 55 * scale, 170 * scale); ctx.lineTo(cx + 80 * scale, 250 * scale); ctx.stroke();
+  // Legs
+  ctx.beginPath(); ctx.moveTo(cx - 25 * scale, 290 * scale); ctx.lineTo(cx - 35 * scale, 380 * scale); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx + 25 * scale, 290 * scale); ctx.lineTo(cx + 35 * scale, 380 * scale); ctx.stroke();
+
   ctx.setLineDash([]);
-  ctx.fillStyle = 'rgba(100,200,255,0.2)';
-  ctx.font = '11px sans-serif';
+
+  // Label
+  ctx.fillStyle = 'rgba(100,200,255,0.12)';
+  ctx.font = `${11 * scale}px 'Space Grotesk', sans-serif`;
   ctx.textAlign = 'center';
-  ctx.fillText('Desenhe seu personagem!', cx, h - 15);
+  ctx.fillText('Desenhe seu personagem aqui', cx, h - 18 * scale);
 }
