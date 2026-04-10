@@ -230,8 +230,8 @@ export default function GameScreen() {
               animate={{ opacity: 1, scale: 1.3, x: '-50%', y: '-80%' }}
               exit={{ opacity: 0, scale: 0.8, y: '-150%' }}
               transition={{ type: 'spring', damping: 12 }}>
-              <Flame size={28} className="text-accent" />
-              <span className="text-accent font-display" style={{ textShadow: '0 0 20px rgba(245,158,11,0.6), 0 4px 16px rgba(245,158,11,0.3)' }}>
+              <Flame size={28} className="text-primary" />
+              <span className="text-primary font-display" style={{ textShadow: '0 0 20px rgba(59,130,246,0.6), 0 4px 16px rgba(59,130,246,0.3)' }}>
                 {comboText}
               </span>
             </motion.div>
@@ -249,7 +249,7 @@ export default function GameScreen() {
               <motion.div className="mx-auto mb-3 w-16 h-16 rounded-2xl avatar-stage flex items-center justify-center"
                 animate={{ rotate: overlay.won ? [0, 10, -10, 0] : [0, -5, 5, 0] }}
                 transition={{ duration: 0.5 }}>
-                {overlay.won ? <Trophy size={28} className="text-accent" /> : <AlertTriangle size={28} className="text-destructive" />}
+                {overlay.won ? <Trophy size={28} className="text-primary" /> : <AlertTriangle size={28} className="text-destructive" />}
               </motion.div>
               <h2 className="font-display text-xl text-foreground mb-4">
                 {overlay.won ? 'FASE COMPLETA!' : 'TEMPO ESGOTADO!'}
@@ -275,7 +275,7 @@ export default function GameScreen() {
                     <motion.div key={row.l} className="flex items-center justify-between text-sm font-bold"
                       initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.6 + idx * 0.1 }}>
                       <span className="flex items-center gap-1.5 text-muted-foreground"><row.icon size={12} /> {row.l}</span>
-                      <span className="text-accent font-display">{row.v}</span>
+                      <span className="text-primary font-display">{row.v}</span>
                     </motion.div>
                   ))}
                 </div>

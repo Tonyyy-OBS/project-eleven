@@ -6,38 +6,38 @@
 
 @layer base {
   :root {
-    --background: 221 44% 10%;
+    --background: 222 47% 8%;
     --foreground: 210 40% 96%;
-    --card: 221 31% 15%;
+    --card: 222 35% 13%;
     --card-foreground: 210 40% 96%;
-    --popover: 222 33% 13%;
+    --popover: 222 38% 11%;
     --popover-foreground: 210 40% 96%;
-    --primary: 192 93% 56%;
-    --primary-foreground: 222 47% 11%;
-    --secondary: 220 23% 20%;
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 222 23% 18%;
     --secondary-foreground: 210 40% 96%;
-    --muted: 220 18% 24%;
-    --muted-foreground: 215 20% 72%;
-    --accent: 45 95% 61%;
-    --accent-foreground: 222 47% 11%;
+    --muted: 222 18% 22%;
+    --muted-foreground: 215 20% 68%;
+    --accent: 210 80% 65%;
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 82% 60%;
     --destructive-foreground: 0 0% 100%;
-    --border: 219 18% 28%;
-    --input: 219 18% 28%;
-    --ring: 192 93% 56%;
+    --border: 222 18% 24%;
+    --input: 222 18% 24%;
+    --ring: 217 91% 60%;
     --radius: 1rem;
 
     --font-display: 'Space Grotesk', sans-serif;
     --font-body: 'Manrope', sans-serif;
 
-    --sidebar-background: 221 44% 12%;
+    --sidebar-background: 222 47% 10%;
     --sidebar-foreground: 210 40% 96%;
-    --sidebar-primary: 192 93% 56%;
-    --sidebar-primary-foreground: 222 47% 11%;
-    --sidebar-accent: 220 23% 20%;
+    --sidebar-primary: 217 91% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 222 23% 18%;
     --sidebar-accent-foreground: 210 40% 96%;
-    --sidebar-border: 219 18% 28%;
-    --sidebar-ring: 192 93% 56%;
+    --sidebar-border: 222 18% 24%;
+    --sidebar-ring: 217 91% 60%;
   }
 
   * {
@@ -54,9 +54,9 @@
     min-height: 100vh;
     overflow-x: hidden;
     background:
-      radial-gradient(circle at top, hsl(193 92% 56% / 0.22), transparent 28%),
-      radial-gradient(circle at 80% 20%, hsl(45 95% 61% / 0.1), transparent 20%),
-      linear-gradient(180deg, hsl(221 44% 12%), hsl(224 48% 8%));
+      radial-gradient(circle at top, hsl(217 91% 60% / 0.15), transparent 28%),
+      radial-gradient(circle at 80% 20%, hsl(210 80% 65% / 0.08), transparent 20%),
+      linear-gradient(180deg, hsl(222 47% 10%), hsl(224 48% 6%));
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
@@ -115,7 +115,7 @@
   }
 
   .btn-primary {
-    background: linear-gradient(135deg, hsl(var(--primary)), hsl(196 92% 62%));
+    background: linear-gradient(135deg, hsl(var(--primary)), hsl(210 85% 55%));
     color: hsl(var(--primary-foreground));
     font-family: var(--font-display);
     font-weight: 700;
@@ -126,7 +126,7 @@
   }
 
   .btn-primary:hover {
-    filter: brightness(1.05);
+    filter: brightness(1.08);
     transform: translateY(-1px);
   }
 
@@ -217,8 +217,8 @@
   }
 
   .badge-price {
-    background: hsl(var(--accent));
-    color: hsl(var(--accent-foreground));
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
   }
 
   .badge-free {

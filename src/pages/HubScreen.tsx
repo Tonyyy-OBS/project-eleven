@@ -33,11 +33,11 @@ export default function HubScreen() {
 
   const cards = [
     { key: 'play', icon: Gamepad2, title: 'JOGAR', sub: 'Jogo da Memória', path: '/game', gradient: 'from-blue-500/20 to-blue-600/5', iconBg: 'bg-blue-500' },
-    { key: 'quiz', icon: Brain, title: 'QUIZ', sub: quizUnlocked ? 'Teste seus conhecimentos' : `Nível ${QUIZ_UNLOCK} para desbloquear`, path: '/quiz', gradient: 'from-purple-500/20 to-purple-600/5', iconBg: 'bg-purple-500', locked: !quizUnlocked },
-    { key: 'rank', icon: Trophy, title: 'RANKING', sub: 'Top jogadores', path: '/ranking', gradient: 'from-amber-500/20 to-amber-600/5', iconBg: 'bg-amber-500' },
-    { key: 'shop', icon: ShoppingBag, title: 'LOJA', sub: 'Itens & Costumes', path: '/shop', gradient: 'from-emerald-500/20 to-emerald-600/5', iconBg: 'bg-emerald-500' },
-    { key: 'profile', icon: User, title: 'PERFIL', sub: 'Stats & Conquistas', path: '/profile', gradient: 'from-pink-500/20 to-pink-600/5', iconBg: 'bg-pink-500' },
-    { key: 'avatar', icon: Sparkles, title: 'AVATAR', sub: 'Personalizar', path: '/avatar', gradient: 'from-cyan-500/20 to-cyan-600/5', iconBg: 'bg-cyan-500' },
+    { key: 'quiz', icon: Brain, title: 'QUIZ', sub: quizUnlocked ? 'Teste seus conhecimentos' : `Nível ${QUIZ_UNLOCK} para desbloquear`, path: '/quiz', gradient: 'from-sky-500/20 to-sky-600/5', iconBg: 'bg-sky-500', locked: !quizUnlocked },
+    { key: 'rank', icon: Trophy, title: 'RANKING', sub: 'Top jogadores', path: '/ranking', gradient: 'from-indigo-500/20 to-indigo-600/5', iconBg: 'bg-indigo-500' },
+    { key: 'shop', icon: ShoppingBag, title: 'LOJA', sub: 'Itens & Costumes', path: '/shop', gradient: 'from-cyan-500/20 to-cyan-600/5', iconBg: 'bg-cyan-500' },
+    { key: 'profile', icon: User, title: 'PERFIL', sub: 'Stats & Conquistas', path: '/profile', gradient: 'from-blue-400/20 to-blue-500/5', iconBg: 'bg-blue-400' },
+    { key: 'avatar', icon: Sparkles, title: 'AVATAR', sub: 'Personalizar', path: '/avatar', gradient: 'from-sky-400/20 to-sky-500/5', iconBg: 'bg-sky-400' },
     { key: 'credits', icon: Info, title: 'CRÉDITOS', sub: 'Equipe do projeto', path: '/credits', gradient: 'from-slate-500/20 to-slate-600/5', iconBg: 'bg-slate-500' },
   ];
 
@@ -128,7 +128,6 @@ export default function HubScreen() {
                   initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
                   whileHover={!card.locked ? { y: -3, scale: 1.01 } : undefined}
                   whileTap={!card.locked ? { scale: 0.97 } : undefined}>
-                  {/* Gradient bg */}
                   <div className={`absolute inset-0 bg-gradient-to-b ${card.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
                   <div className={`relative w-11 h-11 rounded-xl ${card.iconBg} flex items-center justify-center text-white shadow-lg`}>
                     {card.locked ? <Lock size={18} /> : <Icon size={20} />}

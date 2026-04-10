@@ -101,8 +101,8 @@ export default function QuizScreen() {
     trackMission('quiz', 1);
   };
 
-  const optColors = ['bg-red-500/15 border-red-500/30 hover:border-red-500/60', 'bg-blue-500/15 border-blue-500/30 hover:border-blue-500/60', 'bg-amber-500/15 border-amber-500/30 hover:border-amber-500/60', 'bg-emerald-500/15 border-emerald-500/30 hover:border-emerald-500/60'];
-  const optLetterColors = ['text-red-400', 'text-blue-400', 'text-amber-400', 'text-emerald-400'];
+  const optColors = ['bg-blue-500/15 border-blue-500/30 hover:border-blue-500/60', 'bg-sky-500/15 border-sky-500/30 hover:border-sky-500/60', 'bg-indigo-500/15 border-indigo-500/30 hover:border-indigo-500/60', 'bg-cyan-500/15 border-cyan-500/30 hover:border-cyan-500/60'];
+  const optLetterColors = ['text-blue-400', 'text-sky-400', 'text-indigo-400', 'text-cyan-400'];
   const optLetters = ['A', 'B', 'C', 'D'];
 
   return (
@@ -153,15 +153,14 @@ export default function QuizScreen() {
               <span>{qs.cur + 1}/{qs.qs.length}</span>
               <span className="flex items-center gap-1"><Trophy size={11} /> {qs.score} pts</span>
             </div>
-            {/* Timer bar */}
             <div className="h-2 bg-secondary/40 rounded-full overflow-hidden">
               <motion.div className="h-full rounded-full origin-left"
-                style={{ background: `linear-gradient(90deg, #22C55E, #F59E0B, #EF4444)` }}
+                style={{ background: `linear-gradient(90deg, #3B82F6, #60A5FA, #93C5FD)` }}
                 animate={{ scaleX: qs.timeLeft / 15 }} transition={{ duration: 0.3 }} />
             </div>
             <div className="flex items-center justify-center gap-1.5">
-              <Clock size={14} className={qs.timeLeft <= 5 ? 'text-destructive' : 'text-emerald-500'} />
-              <span className={`font-display text-lg ${qs.timeLeft <= 5 ? 'text-destructive animate-pulse' : 'text-emerald-500'}`}>
+              <Clock size={14} className={qs.timeLeft <= 5 ? 'text-destructive' : 'text-primary'} />
+              <span className={`font-display text-lg ${qs.timeLeft <= 5 ? 'text-destructive animate-pulse' : 'text-primary'}`}>
                 {qs.timeLeft}
               </span>
             </div>
@@ -216,16 +215,16 @@ export default function QuizScreen() {
           <motion.div className="glass-card p-8 max-w-sm text-center flex flex-col items-center gap-3 shadow-2xl"
             initial={{ scale: 0.6 }} animate={{ scale: 1 }} transition={{ type: 'spring', damping: 15 }}>
             <div className="w-16 h-16 rounded-2xl avatar-stage flex items-center justify-center">
-              <Trophy size={28} className={result.ok >= 7 ? 'text-accent' : 'text-muted-foreground'} />
+              <Trophy size={28} className={result.ok >= 7 ? 'text-primary' : 'text-muted-foreground'} />
             </div>
             <h2 className="font-display text-xl text-foreground">QUIZ CONCLUÍDO!</h2>
-            <div className="font-display text-5xl text-accent">{result.score}</div>
+            <div className="font-display text-5xl text-primary">{result.score}</div>
             <div className="text-xs text-muted-foreground font-display tracking-wider">PONTOS</div>
             <div className="bg-secondary/20 rounded-xl p-3 w-full flex flex-col gap-2 border border-border/20">
               {[
                 { icon: CheckCircle, l: 'Certas', v: result.ok, color: 'text-emerald-500' },
                 { icon: XCircle, l: 'Erradas', v: result.bad, color: 'text-destructive' },
-                { icon: Flame, l: 'Combo Máx', v: result.maxCombo, color: 'text-accent' },
+                { icon: Flame, l: 'Combo Máx', v: result.maxCombo, color: 'text-primary' },
                 { icon: Coins, l: 'Moedas', v: `+${result.coins}`, color: 'text-accent' },
               ].map(row => (
                 <div key={row.l} className="flex items-center justify-between text-sm text-muted-foreground">

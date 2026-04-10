@@ -28,8 +28,12 @@ export default function ProfileScreen() {
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-xl mx-auto px-3.5 py-4 flex flex-col gap-3">
           <motion.div className="glass-card p-6 flex flex-col items-center gap-3" initial={{ scale: 0.95 }} animate={{ scale: 1 }}>
-            <div className="w-24 h-32 rounded-2xl border-2 border-primary/40 bg-secondary/20 overflow-hidden flex items-center justify-center">
-              <Avatar config={user.avatar || defaultAvatar()} size={72} />
+            <div className="w-24 h-24 rounded-full border-2 border-primary/40 bg-secondary/20 overflow-hidden flex items-center justify-center">
+              {user.avatarDrawing ? (
+                <img src={user.avatarDrawing} alt="Avatar" className="w-full h-full object-cover" />
+              ) : (
+                <Avatar config={user.avatar || defaultAvatar()} size={72} />
+              )}
             </div>
             <h2 className="font-display text-xl text-foreground">{user.name}</h2>
             <span className="bg-primary/15 text-primary font-display text-[0.7rem] px-3 py-0.5 rounded-lg border border-primary/20">
@@ -40,7 +44,7 @@ export default function ProfileScreen() {
                 { icon: Star, n: user.lv || 1, l: 'Nível', color: 'text-primary' },
                 { icon: Coins, n: fmt(user.coins || 0), l: 'Moedas', color: 'text-accent' },
                 { icon: Gamepad2, n: user.games || 0, l: 'Partidas', color: 'text-blue-400' },
-                { icon: Trophy, n: fmt(totalScore), l: 'Score', color: 'text-amber-400' },
+                { icon: Trophy, n: fmt(totalScore), l: 'Score', color: 'text-sky-400' },
               ].map(s => (
                 <div key={s.l} className="flex flex-col items-center gap-1 bg-secondary/20 rounded-xl p-2.5 border border-border/15">
                   <s.icon size={14} className={s.color} />
@@ -53,7 +57,7 @@ export default function ProfileScreen() {
 
           <div className="glass-card p-4">
             <div className="flex items-center gap-2 mb-3">
-              <Medal size={14} className="text-accent" />
+              <Medal size={14} className="text-primary" />
               <span className="font-display text-xs text-muted-foreground tracking-wider">CONQUISTAS</span>
             </div>
             <div className="grid grid-cols-4 md:grid-cols-5 gap-2">
@@ -62,10 +66,10 @@ export default function ProfileScreen() {
                 return (
                   <motion.div key={a.k}
                     className={`flex flex-col items-center gap-1 p-2 bg-secondary/20 border rounded-xl cursor-default transition-all ${
-                      done ? 'border-accent/40 bg-accent/5' : 'border-border/15 opacity-40'}`}
+                      done ? 'border-primary/40 bg-primary/5' : 'border-border/15 opacity-40'}`}
                     title={a.d} whileHover={done ? { scale: 1.05 } : undefined}>
                     <span className="font-display text-[0.7rem] text-primary font-black">{a.ico}</span>
-                    <span className={`text-[0.5rem] font-bold text-center leading-tight ${done ? 'text-accent' : 'text-muted-foreground'}`}>{a.n}</span>
+                    <span className={`text-[0.5rem] font-bold text-center leading-tight ${done ? 'text-primary' : 'text-muted-foreground'}`}>{a.n}</span>
                   </motion.div>
                 );
               })}
@@ -87,7 +91,7 @@ export default function ProfileScreen() {
                       <span className="font-bold text-foreground">{h.type}</span>
                       <span className="text-[0.6rem] text-muted-foreground">{h.date}</span>
                     </div>
-                    <span className="font-display text-xs text-accent font-bold">{fmt(h.score)} pts</span>
+                    <span className="font-display text-xs text-primary font-bold">{fmt(h.score)} pts</span>
                   </div>
                 ))}
               </div>
