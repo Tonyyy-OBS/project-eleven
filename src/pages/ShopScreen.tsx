@@ -37,7 +37,7 @@ export default function ShopScreen() {
 
   if (!user) return null;
   const items = cat === 'all' ? ALL_ITEMS.filter(i => !i.free) : ALL_ITEMS.filter(i => i.cat === cat);
-  const isOwned = (item: ShopItem) => item.free || ownsItem(user, item.cat, item.id);
+  const isOwned = (item: ShopItem) => item.free || ownsItem(user.ownedItems, item.cat, item.id);
   const previewAvatar: AvatarConfig = selItem ? { ...user.avatar, [selItem.avatarKey]: selItem.id } : user.avatar;
 
   const buy = () => {

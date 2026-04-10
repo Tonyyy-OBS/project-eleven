@@ -19,11 +19,12 @@ import NotFound from '@/pages/NotFound';
 const queryClient = new QueryClient();
 
 function AppRoutes() {
-  const { user } = useGame();
-  const [loading, setLoading] = useState(true);
-  const onLoadComplete = useCallback(() => setLoading(false), []);
+  const { user, loading } = useGame();
+  const [splashDone, setSplashDone] = useState(false);
+  const onSplashComplete = useCallback(() => setSplashDone(true), []);
 
-  if (loading) return <LoadingScreen onComplete={onLoadComplete} />;
+  if (!splashDone) return <LoadingScreen onComplete={onSplashComplete} />;
+  if (loading) return <LoadingScreen onComplete={() => {}} />;
   if (!user) return <AuthScreen />;
   if (!user.charCreated) return <CharacterScreen />;
 

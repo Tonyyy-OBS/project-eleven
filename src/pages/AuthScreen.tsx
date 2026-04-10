@@ -2,12 +2,13 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGame } from '@/contexts/GameContext';
 import { SFX } from '@/lib/sounds';
-import { Atom, Eye, EyeOff, ShieldCheck } from 'lucide-react';
+import { Atom, Eye, EyeOff, ShieldCheck, Mail, User } from 'lucide-react';
 
 export default function AuthScreen() {
   const { login, register } = useGame();
   const [tab, setTab] = useState<'login' | 'reg'>('login');
   const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
   const [pwd, setPwd] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -19,18 +20,18 @@ export default function AuthScreen() {
     setError('');
     setLoading(true);
     try {
-      await new Promise(r => setTimeout(r, 180));
       if (tab === 'login') {
-        if (!name || !pwd) throw new Error('Preencha nome e senha.');
-        login(name, pwd);
+        if (!email || !pwd) throw new Error('Preencha email e senha.');
+        await login(email, pwd);
       } else {
-        if (!name || !pwd) throw new Error('Preencha todos os campos.');
+        if (!name || !email || !pwd) throw new Error('Preencha todos os campos.');
         if (name.trim().length < 3) throw new Error('Nome deve ter pelo menos 3 caracteres.');
-        if (pwd.length < 4) throw new Error('Senha mínima: 4 caracteres.');
-        register(name, pwd);
+        if (pwd.length < 6) throw new Error('Senha mínima: 6 caracteres.');
+        await register(name, email, pwd);
       }
     } catch (err: any) {
       setError(err.message);
+    } finally {
       setLoading(false);
     }
   };
@@ -50,7 +51,7 @@ export default function AuthScreen() {
           </div>
           <div>
             <h1 className="font-display text-3xl text-foreground">Universos Atômicos</h1>
-            <p className="text-muted-foreground text-sm mt-1">Jogo da memória, quiz científico e avatar completo em uma experiência mais clara e profissional.</p>
+            <p className="text-muted-foreground text-sm mt-1">Jogo da memória, quiz científico e avatar em uma experiência interativa.</p>
           </div>
         </div>
 
@@ -70,20 +71,39 @@ export default function AuthScreen() {
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-3 w-full">
+          {tab === 'reg' && (
+            <div>
+              <label className="text-xs font-bold text-muted-foreground block mb-1.5">Nome do jogador</label>
+              <div className="relative">
+                <User size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <input
+                  value={name}
+                  onChange={e => setName(e.target.value)}
+                  className="w-full bg-card border border-border rounded-xl pl-10 pr-4 py-3 text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                  placeholder="Seu nome"
+                  maxLength={20}
+                />
+              </div>
+            </div>
+          )}
+
           <div>
-            <label className="text-xs font-bold text-muted-foreground block mb-1.5">Nome do jogador</label>
-            <input
-              value={name}
-              onChange={e => setName(e.target.value)}
-              className="w-full bg-card border border-border rounded-xl px-4 py-3 text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
-              placeholder="Seu nome"
-              maxLength={20}
-            />
+            <label className="text-xs font-bold text-muted-foreground block mb-1.5">Email</label>
+            <div className="relative">
+              <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <input
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                className="w-full bg-card border border-border rounded-xl pl-10 pr-4 py-3 text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                placeholder="seu@email.com"
+              />
+            </div>
           </div>
 
           <div>
             <label className="text-xs font-bold text-muted-foreground block mb-1.5">
-              Senha {tab === 'reg' && <span className="font-normal">(mín. 4 caracteres)</span>}
+              Senha {tab === 'reg' && <span className="font-normal">(mín. 6 caracteres)</span>}
             </label>
             <div className="relative">
               <input
@@ -121,7 +141,7 @@ export default function AuthScreen() {
 
         <div className="status-chip flex items-center gap-2">
           <ShieldCheck size={14} className="text-primary" />
-          Login local simples para testar o jogo rapidamente
+          Autenticação segura com Lovable Cloud
         </div>
       </motion.div>
     </motion.div>
